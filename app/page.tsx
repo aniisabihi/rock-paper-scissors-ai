@@ -59,8 +59,8 @@ const Home: FC = () => {
 
       // Pattern Prediction (Medium difficulty)
       if (difficulty === 'Medium') {
-        recordPlayerChoice(choice);
-        setAiPrediction(predictNextMove());
+        setAiPrediction(predictNextMove()); // Predict based on history BEFORE current choice
+        recordPlayerChoice(choice); // Then record the current choice for future predictions
       }
 
       // Simulate AI "thinking"

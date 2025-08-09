@@ -30,14 +30,54 @@ export const predictNextMove = (): Choice => {
     return getRandomChoice();
   }
 
-  const counts: Record<Choice, number> = { rock: 0, paper: 0, scissors: 0 };
-  playerHistory.forEach((choice) => {
-    counts[choice]++;
-  });
+  // For small histories, use frequency analysis
+  if (playerHistory.length < 3) {
+    const counts: Record<Choice, number> = { rock: 0, paper: 0, scissors: 0 };
+    playerHistory.forEach((choice) => {
+      counts[choice]++;
+    });
 
-  const predicted = (Object.keys(counts) as Choice[]).reduce((a, b) => (counts[a] > counts[b] ? a : b));
+    // Find most frequent choice
+    const predicted = (Object.keys(counts) as Choice[]).reduce((a, b) => (counts[a] > counts[b] ? a : b));
+    return predicted;
+  }
 
-  return predicted;
+  // For longer histories, use simple Markov chain (last choice -> next choice pattern)
+  return predictWithMarkovChain();
+};
+
+// Simple Markov chain: analyze what player typically chooses after their last choice
+const predictWithMarkovChain = (): Choice => {
+  const lastChoice = playerHistory[playerHistory.length - 1];
+  const transitions: Record<Choice, Record<Choice, number>> = {
+    rock: { rock: 0, paper: 0, scissors: 0 },
+    paper: { rock: 0, paper: 0, scissors: 0 },
+    scissors: { rock: 0, paper: 0, scissors: 0 },
+  };
+
+  // Analyze patterns: what does player choose after each choice?
+  for (let i = 0; i < playerHistory.length - 1; i++) {
+    const current = playerHistory[i];
+    const next = playerHistory[i + 1];
+    transitions[current][next]++;
+  }
+
+  // Find most likely next choice after the last choice
+  const possibleNext = transitions[lastChoice];
+  const mostLikely = (Object.keys(possibleNext) as Choice[]).reduce((a, b) =>
+    possibleNext[a] > possibleNext[b] ? a : b
+  );
+
+  // If no clear pattern found, fall back to frequency analysis
+  if (possibleNext[mostLikely] === 0) {
+    const counts: Record<Choice, number> = { rock: 0, paper: 0, scissors: 0 };
+    playerHistory.forEach((choice) => {
+      counts[choice]++;
+    });
+    return (Object.keys(counts) as Choice[]).reduce((a, b) => (counts[a] > counts[b] ? a : b));
+  }
+
+  return mostLikely;
 };
 
 export const getSmartChoice = (): Choice => {
