@@ -1,12 +1,13 @@
 "use client";
 
+import type { FC } from "react";
 import { motion } from "framer-motion";
 
-type AiAvatarProps = {
-  mood: "idle" | "win" | "lose" | "draw";
-};
+interface AiAvatarProps {
+  readonly mood: "idle" | "win" | "lose" | "draw";
+}
 
-export default function AiAvatar({ mood }: AiAvatarProps) {
+const AiAvatar: FC<AiAvatarProps> = ({ mood }) => {
   const getFace = () => {
     switch (mood) {
       case "win":
@@ -38,4 +39,6 @@ export default function AiAvatar({ mood }: AiAvatarProps) {
       {getFace()}
     </motion.div>
   );
-}
+};
+
+export default AiAvatar;

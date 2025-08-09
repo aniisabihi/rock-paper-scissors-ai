@@ -1,8 +1,9 @@
 "use client";
 
+import type { FC } from "react";
 import { motion } from "framer-motion";
 
-export default function TypingDots() {
+const TypingDots: FC = () => {
   return (
     <div className='flex items-center gap-1'>
       {[0, 1, 2].map((i) => (
@@ -21,4 +22,6 @@ export default function TypingDots() {
       ))}
     </div>
   );
-}
+};
+
+export default TypingDots;

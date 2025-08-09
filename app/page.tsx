@@ -1,15 +1,16 @@
 "use client";
 
+import type { FC } from "react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChoiceButton } from "@/components/choice-button/ChoiceButton";
+import { ChoiceButton } from "@/components/ChoiceButton";
 import {
   getRandomChoice,
   getSmartChoice,
   recordPlayerChoice,
   determineResult,
   predictNextMove,
-  Choice,
+  type Choice,
 } from "@/lib/game/logic";
 import TypingDots from "@/components/TypingDots";
 import AiAvatar from "@/components/AiAvatar";
@@ -17,7 +18,7 @@ import AiAvatar from "@/components/AiAvatar";
 const difficulties = ["Easy", "Medium", "Hard"] as const;
 type Difficulty = (typeof difficulties)[number];
 
-export default function Home() {
+const Home: FC = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [playerChoice, setPlayerChoice] = useState<Choice | null>(null);
   const [aiChoice, setAiChoice] = useState<Choice | null>(null);
@@ -192,4 +193,6 @@ export default function Home() {
       </div>
     </main>
   );
-}
+};
+
+export default Home;
