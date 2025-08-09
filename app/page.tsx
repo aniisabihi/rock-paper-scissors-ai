@@ -133,19 +133,17 @@ const Home: FC = () => {
             aria-label="AI opponent"
           >
             <h2 className="text-lg font-semibold">AI</h2>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center relative">
               <AiAvatar mood={getAiMood()} />
-            </div>
 
-            {/* Thought bubble - responsive positioning */}
-            <div className="w-full max-w-xs md:w-auto">
+              {/* Thought bubble - positioned absolutely to prevent layout shift */}
               <AnimatePresence>
                 {isThinking && aiPrediction && difficulty === 'Medium' && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="bg-white/20 px-4 py-3 rounded-2xl shadow text-sm backdrop-blur-sm mx-auto relative max-w-[280px]"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="absolute top-[-120px] left-1/2 transform -translate-x-1/2 bg-white/20 px-4 py-3 rounded-2xl shadow text-sm backdrop-blur-sm min-w-[200px] max-w-[400px] whitespace-nowrap z-10"
                   >
                     <div className="flex items-center gap-2 justify-center">
                       <span className="font-medium">🤖:</span>
@@ -159,6 +157,8 @@ const Home: FC = () => {
                     >
                       &quot;I bet you&apos;ll pick {aiPrediction}!&quot;
                     </motion.div>
+                    {/* Speech bubble tail */}
+                    <div className="absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white/20"></div>
                   </motion.div>
                 )}
               </AnimatePresence>
