@@ -16,6 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js" async></script>
+      </head>
       <body className="antialiased">{children}</body>
     </html>
   );

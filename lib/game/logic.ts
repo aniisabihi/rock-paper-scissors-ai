@@ -1,5 +1,6 @@
 export type Choice = 'rock' | 'paper' | 'scissors';
 export type Result = 'win' | 'lose' | 'draw';
+export type AIMode = 'random' | 'pattern' | 'adaptive';
 
 const choices: readonly Choice[] = ['rock', 'paper', 'scissors'] as const;
 const playerHistory: Choice[] = [];
@@ -89,4 +90,53 @@ export const getSmartChoice = (): Choice => {
   };
 
   return counterchoices[predicted];
+};
+
+export const getAdaptiveChoice = async (adaptiveAI: {
+  predictNextMove: () => Promise<{ rockProbability: number; paperProbability: number; scissorsProbability: number }>;
+}): Promise<Choice> => {
+  try {
+    const prediction = await adaptiveAI.predictNextMove();
+    const probabilities = [
+      { choice: 'rock' as Choice, probability: prediction.rockProbability },
+      { choice: 'paper' as Choice, probability: prediction.paperProbability },
+      { choice: 'scissors' as Choice, probability: prediction.scissorsProbability },
+    ];
+
+    // Find the most likely player choice
+    const predictedPlayerChoice = probabilities.reduce((a, b) => (a.probability > b.probability ? a : b)).choice;
+
+    // Counter the predicted choice
+    const counterchoices: Record<Choice, Choice> = {
+      rock: 'paper',
+      paper: 'scissors',
+      scissors: 'rock',
+    };
+
+    return counterchoices[predictedPlayerChoice];
+  } catch (error) {
+    console.error('Adaptive AI error, falling back to smart choice:', error);
+    return getSmartChoice();
+  }
+};
+
+export const getChoiceForMode = async (
+  mode: AIMode,
+  adaptiveAI?: {
+    predictNextMove: () => Promise<{ rockProbability: number; paperProbability: number; scissorsProbability: number }>;
+  } | null
+): Promise<Choice> => {
+  switch (mode) {
+    case 'random':
+      return getRandomChoice();
+    case 'pattern':
+      return getSmartChoice();
+    case 'adaptive':
+      if (adaptiveAI) {
+        return await getAdaptiveChoice(adaptiveAI);
+      }
+      return getSmartChoice();
+    default:
+      return getRandomChoice();
+  }
 };

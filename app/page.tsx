@@ -2,7 +2,7 @@
 
 // React imports
 import type { FC } from 'react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 // Third-party imports
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,19 +15,27 @@ import AiAvatar from '@/components/AiAvatar';
 // Game logic imports
 import {
   getRandomChoice,
-  getSmartChoice,
   recordPlayerChoice,
   determineResult,
   predictNextMove,
+  getChoiceForMode,
   type Choice,
   type Result,
+  type AIMode,
 } from '@/lib/game/logic';
+import { AdaptiveAI, type AIConfidence } from '@/lib/game/adaptive-ai';
+import AIThoughtBubble from '@/components/AIThoughtBubble';
 
 // Types
 type Difficulty = (typeof DIFFICULTIES)[number];
 
 // Constants
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const;
+const AI_MODES: Record<Difficulty, AIMode> = {
+  Easy: 'random',
+  Medium: 'pattern',
+  Hard: 'adaptive',
+};
 const AI_THINKING_DELAY = 1500; // milliseconds
 
 const Home: FC = () => {
@@ -37,6 +45,13 @@ const Home: FC = () => {
   const [aiPrediction, setAiPrediction] = useState<Choice | null>(null);
   const [isThinking, setIsThinking] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [adaptivePrediction, setAdaptivePrediction] = useState<AIConfidence | null>(null);
+  const adaptiveAI = useRef<AdaptiveAI | null>(null);
+
+  // Initialize adaptive AI
+  useEffect(() => {
+    adaptiveAI.current = new AdaptiveAI();
+  }, []);
 
   const getAiMood = (): 'idle' | 'win' | 'lose' | 'draw' => {
     if (isThinking || !result) return 'idle';
@@ -51,32 +66,50 @@ const Home: FC = () => {
   };
 
   const handlePlayerChoice = useCallback(
-    (choice: Choice) => {
+    async (choice: Choice) => {
       setIsThinking(true);
       setResult(null);
       setAiChoice(null);
       setPlayerChoice(choice);
+      setAdaptivePrediction(null);
 
-      // Pattern Prediction (Medium difficulty)
-      if (difficulty === 'Medium') {
-        setAiPrediction(predictNextMove()); // Predict based on history BEFORE current choice
-        recordPlayerChoice(choice); // Then record the current choice for future predictions
+      const currentMode = AI_MODES[difficulty];
+
+      // Get prediction before recording the choice
+      if (currentMode === 'pattern') {
+        setAiPrediction(predictNextMove());
+        recordPlayerChoice(choice);
+      } else if (currentMode === 'adaptive' && adaptiveAI.current) {
+        // Get AI prediction before the player's move is recorded
+        const prediction = await adaptiveAI.current.predictNextMove();
+        setAdaptivePrediction(prediction);
       }
 
       // Simulate AI "thinking"
-      setTimeout(() => {
-        let ai: Choice;
-        if (difficulty === 'Easy') {
-          ai = getRandomChoice();
-        } else if (difficulty === 'Medium') {
-          ai = getSmartChoice();
-        } else {
-          // Adaptive AI placeholder for now
-          ai = getSmartChoice();
+      setTimeout(async () => {
+        try {
+          const ai = await getChoiceForMode(currentMode, adaptiveAI.current);
+          const gameResult = determineResult(choice, ai);
+
+          setAiChoice(ai);
+          setResult(gameResult);
+
+          // Record the game for adaptive learning
+          if (currentMode === 'adaptive' && adaptiveAI.current) {
+            adaptiveAI.current.recordGame(choice, ai, gameResult);
+          } else if (currentMode === 'pattern') {
+            // Already recorded above for pattern mode
+          }
+
+          setIsThinking(false);
+        } catch (error) {
+          console.error('Error in AI choice generation:', error);
+          // Fallback
+          const ai = getRandomChoice();
+          setAiChoice(ai);
+          setResult(determineResult(choice, ai));
+          setIsThinking(false);
         }
-        setAiChoice(ai);
-        setResult(determineResult(choice, ai));
-        setIsThinking(false);
       }, AI_THINKING_DELAY);
     },
     [difficulty]
@@ -93,17 +126,31 @@ const Home: FC = () => {
           className="flex gap-2 sm:gap-3 bg-white/10 backdrop-blur-sm p-2 rounded-full"
           aria-label="Difficulty selection"
         >
-          {DIFFICULTIES.map((level) => (
-            <button
-              key={level}
-              onClick={() => setDifficulty(level)}
-              className={`px-3 py-1 sm:px-4 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition ${
-                difficulty === level ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/20'
-              }`}
-            >
-              {level}
-            </button>
-          ))}
+          {DIFFICULTIES.map((level) => {
+            const modeLabels: Record<Difficulty, string> = {
+              Easy: 'Easy (Random)',
+              Medium: 'Medium (Pattern)',
+              Hard: 'Hard (Adaptive AI)',
+            };
+            return (
+              <button
+                key={level}
+                onClick={() => {
+                  setDifficulty(level);
+                  // Reset adaptive AI when switching modes
+                  if (level !== 'Hard' && adaptiveAI.current) {
+                    adaptiveAI.current.reset();
+                  }
+                }}
+                className={`px-3 py-1 sm:px-4 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition ${
+                  difficulty === level ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/20'
+                }`}
+                title={modeLabels[level]}
+              >
+                {level}
+              </button>
+            );
+          })}
         </nav>
       </header>
 
@@ -136,7 +183,14 @@ const Home: FC = () => {
             <div className="flex items-center justify-center relative">
               <AiAvatar mood={getAiMood()} />
 
-              {/* Thought bubble - positioned absolutely to prevent layout shift */}
+              {/* Adaptive AI Thought Bubble */}
+              <AIThoughtBubble
+                prediction={adaptivePrediction}
+                isVisible={difficulty === 'Hard' && (isThinking || !!adaptivePrediction)}
+                isThinking={isThinking}
+              />
+
+              {/* Simple Thought bubble for Medium difficulty */}
               <AnimatePresence>
                 {isThinking && aiPrediction && difficulty === 'Medium' && (
                   <motion.div
@@ -199,6 +253,15 @@ const Home: FC = () => {
               <p>
                 AI chose: <strong>{aiChoice}</strong>
               </p>
+              {difficulty === 'Hard' && adaptiveAI.current && (
+                <div className="mt-2 text-sm text-white/70">
+                  <p>🧠 Games learned from: {adaptiveAI.current.getTrainingProgress().gamesPlayed}</p>
+                  {adaptivePrediction && <p>📊 AI Confidence: {Math.round(adaptivePrediction.confidence * 100)}%</p>}
+                  {adaptiveAI.current.getTrainingProgress().gamesPlayed >= 10 && (
+                    <p>🎯 Neural network is actively learning your patterns!</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
