@@ -1,9 +1,18 @@
 'use client';
 
+// React imports
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+
+// Third-party imports
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Local component imports
 import { ChoiceButton } from '@/components/ChoiceButton';
+import TypingDots from '@/components/TypingDots';
+import AiAvatar from '@/components/AiAvatar';
+
+// Game logic imports
 import {
   getRandomChoice,
   getSmartChoice,
@@ -11,12 +20,15 @@ import {
   determineResult,
   predictNextMove,
   type Choice,
+  type Result,
 } from '@/lib/game/logic';
-import TypingDots from '@/components/TypingDots';
-import AiAvatar from '@/components/AiAvatar';
 
-const difficulties = ['Easy', 'Medium', 'Hard'] as const;
-type Difficulty = (typeof difficulties)[number];
+// Types
+type Difficulty = (typeof DIFFICULTIES)[number];
+
+// Constants
+const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const;
+const AI_THINKING_DELAY = 1500; // milliseconds
 
 const Home: FC = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>('Medium');
@@ -24,54 +36,64 @@ const Home: FC = () => {
   const [aiChoice, setAiChoice] = useState<Choice | null>(null);
   const [aiPrediction, setAiPrediction] = useState<Choice | null>(null);
   const [isThinking, setIsThinking] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
 
   const getAiMood = (): 'idle' | 'win' | 'lose' | 'draw' => {
-    if (isThinking) return 'idle';
-    if (!result) return 'idle';
-    if (result === 'win') return 'lose';
-    if (result === 'lose') return 'win';
-    return 'draw';
+    if (isThinking || !result) return 'idle';
+
+    const moodMap: Record<Result, 'win' | 'lose' | 'draw'> = {
+      win: 'lose', // Player wins, AI loses
+      lose: 'win', // Player loses, AI wins
+      draw: 'draw',
+    };
+
+    return moodMap[result] || 'idle';
   };
 
-  const handlePlayerChoice = (choice: Choice) => {
-    setIsThinking(true);
-    setResult(null);
-    setAiChoice(null);
-    setPlayerChoice(choice);
+  const handlePlayerChoice = useCallback(
+    (choice: Choice) => {
+      setIsThinking(true);
+      setResult(null);
+      setAiChoice(null);
+      setPlayerChoice(choice);
 
-    // Pattern Prediction (Medium difficulty)
-    if (difficulty === 'Medium') {
-      recordPlayerChoice(choice);
-      setAiPrediction(predictNextMove());
-    }
-
-    // Simulate AI "thinking" for 1.5 seconds
-    setTimeout(() => {
-      let ai: Choice;
-      if (difficulty === 'Easy') {
-        ai = getRandomChoice();
-      } else if (difficulty === 'Medium') {
-        ai = getSmartChoice();
-      } else {
-        // Adaptive AI placeholder for now
-        ai = getSmartChoice();
+      // Pattern Prediction (Medium difficulty)
+      if (difficulty === 'Medium') {
+        recordPlayerChoice(choice);
+        setAiPrediction(predictNextMove());
       }
-      setAiChoice(ai);
-      setResult(determineResult(choice, ai));
-      setIsThinking(false);
-    }, 1500);
-  };
+
+      // Simulate AI "thinking"
+      setTimeout(() => {
+        let ai: Choice;
+        if (difficulty === 'Easy') {
+          ai = getRandomChoice();
+        } else if (difficulty === 'Medium') {
+          ai = getSmartChoice();
+        } else {
+          // Adaptive AI placeholder for now
+          ai = getSmartChoice();
+        }
+        setAiChoice(ai);
+        setResult(determineResult(choice, ai));
+        setIsThinking(false);
+      }, AI_THINKING_DELAY);
+    },
+    [difficulty]
+  );
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-indigo-500 to-purple-700 p-4 md:p-6 text-white">
       {/* Header */}
-      <div className="w-full max-w-4xl flex flex-col items-center gap-4 text-center">
+      <header className="w-full max-w-4xl flex flex-col items-center gap-4 text-center">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-md px-4">Rock Paper Scissors</h1>
 
         {/* Difficulty Selector */}
-        <div className="flex gap-2 sm:gap-3 bg-white/10 backdrop-blur-sm p-2 rounded-full">
-          {difficulties.map((level) => (
+        <nav
+          className="flex gap-2 sm:gap-3 bg-white/10 backdrop-blur-sm p-2 rounded-full"
+          aria-label="Difficulty selection"
+        >
+          {DIFFICULTIES.map((level) => (
             <button
               key={level}
               onClick={() => setDifficulty(level)}
@@ -82,21 +104,21 @@ const Home: FC = () => {
               {level}
             </button>
           ))}
-        </div>
-      </div>
+        </nav>
+      </header>
 
       {/* Game Area - True mobile-first responsive design */}
-      <div className="w-full max-w-6xl mx-auto mt-6 px-4">
+      <section className="w-full max-w-6xl mx-auto mt-6 px-4" aria-label="Game area">
         <div className="flex flex-col md:grid md:grid-cols-3 items-center gap-6 md:gap-8 lg:gap-12">
           {/* Player Section */}
-          <div className="flex flex-col items-center gap-4 w-full order-1 md:order-1">
+          <section className="flex flex-col items-center gap-4 w-full order-1 md:order-1" aria-label="Player controls">
             <p className="text-lg font-semibold">You</p>
             <div className="flex flex-row gap-2 md:gap-3 justify-center">
               <ChoiceButton label="🪨" value="rock" onClick={handlePlayerChoice} />
               <ChoiceButton label="📄" value="paper" onClick={handlePlayerChoice} />
               <ChoiceButton label="✂️" value="scissors" onClick={handlePlayerChoice} />
             </div>
-          </div>
+          </section>
 
           {/* VS Divider */}
           <div className="flex justify-center order-2 md:order-2">
@@ -106,8 +128,11 @@ const Home: FC = () => {
           </div>
 
           {/* AI Section */}
-          <div className="flex flex-col items-center gap-4 w-full relative order-3 md:order-3">
-            <p className="text-lg font-semibold">AI</p>
+          <section
+            className="flex flex-col items-center gap-4 w-full relative order-3 md:order-3"
+            aria-label="AI opponent"
+          >
+            <h2 className="text-lg font-semibold">AI</h2>
             <div className="flex items-center justify-center">
               <AiAvatar mood={getAiMood()} />
             </div>
@@ -138,12 +163,15 @@ const Home: FC = () => {
                 )}
               </AnimatePresence>
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </section>
 
       {/* Result Section - Responsive and stable */}
-      <div className="w-full max-w-4xl mt-6 md:mt-8 text-center min-h-[100px] md:min-h-[120px] flex flex-col justify-start px-4">
+      <section
+        className="w-full max-w-4xl mt-6 md:mt-8 text-center min-h-[100px] md:min-h-[120px] flex flex-col justify-start px-4"
+        aria-label="Game results"
+      >
         <div className="h-8 md:h-10 flex items-center justify-center">
           <AnimatePresence>
             {result && (
@@ -174,7 +202,7 @@ const Home: FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </section>
     </main>
   );
 };
