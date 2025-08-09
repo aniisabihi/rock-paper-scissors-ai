@@ -12,21 +12,37 @@ interface ChoiceButtonProps {
 
 // Constants outside component to avoid recreation
 const BUTTON_STYLES = [
-  'bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white rounded-xl',
-  'px-3 py-3 md:px-6 md:py-4 min-w-[64px] min-h-[64px] md:min-w-[80px] md:min-h-[80px]',
+  'group relative bg-gradient-to-br from-white/25 via-white/20 to-white/10',
+  'backdrop-blur-md border-2 border-white/40 text-white rounded-xl',
+  'px-3 py-3 md:px-4 md:py-4 min-w-[56px] min-h-[56px] md:min-w-[64px] md:min-h-[64px]',
   'text-lg md:text-xl lg:text-2xl font-medium',
-  'hover:scale-105 hover:bg-white/30 hover:border-white/50 active:scale-95',
-  'transition-all duration-200',
-  'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
-  'flex items-center justify-center flex-shrink-0 shadow-lg',
+  'hover:scale-110 hover:shadow-2xl hover:shadow-white/25 hover:border-white/60',
+  'hover:bg-gradient-to-br hover:from-white/35 hover:via-white/30 hover:to-white/20',
+  'active:scale-95 active:shadow-inner',
+  'transition-all duration-300 ease-out',
+  'focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50',
+  'flex items-center justify-center flex-shrink-0',
+  'shadow-xl shadow-black/20',
+  'before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/10 before:to-transparent before:rounded-2xl before:opacity-0 before:transition-opacity before:duration-300',
+  'hover:before:opacity-100',
 ].join(' ');
 
 export const ChoiceButton: FC<ChoiceButtonProps> = ({ label, value, onClick }) => {
   const handleClick = useCallback(() => onClick(value), [onClick, value]);
 
   return (
-    <button type="button" aria-label={`Choose ${value}`} onClick={handleClick} className={BUTTON_STYLES}>
-      <span className="drop-shadow-sm">{label}</span>
+    <button
+      type="button"
+      aria-label={`Choose ${value} to play against the AI`}
+      onClick={handleClick}
+      className={BUTTON_STYLES}
+      role="button"
+      tabIndex={0}
+    >
+      <span className="drop-shadow-sm" aria-hidden="true">
+        {label}
+      </span>
+      <span className="sr-only">{value}</span>
     </button>
   );
 };

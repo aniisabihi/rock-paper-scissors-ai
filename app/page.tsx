@@ -116,14 +116,27 @@ const Home: FC = () => {
   );
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-indigo-500 to-purple-700 p-4 md:p-6 text-white">
+    <main
+      className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-3 md:p-4 text-white relative overflow-hidden"
+      role="main"
+      aria-label="Rock Paper Scissors Game"
+    >
+      {/* Ambient background elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.3),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,119,198,0.3),transparent_50%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent pointer-events-none" />
+
       {/* Header */}
-      <header className="w-full max-w-4xl flex flex-col items-center gap-4 text-center">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-md px-4">Rock Paper Scissors</h1>
+      <header className="w-full max-w-3xl flex flex-col items-center gap-2 text-center relative z-10">
+        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-2xl px-2 tracking-tight">
+          Rock Paper Scissors
+        </h1>
+        <p className="text-xs sm:text-sm text-white/80 font-medium max-w-lg leading-relaxed">
+          Challenge our AI with adaptive learning across three difficulty modes
+        </p>
 
         {/* Difficulty Selector */}
         <nav
-          className="flex gap-2 sm:gap-3 bg-white/10 backdrop-blur-sm p-2 rounded-full"
+          className="flex gap-2 sm:gap-3 bg-white/10 backdrop-blur-md p-2 rounded-xl shadow-2xl border border-white/20"
           aria-label="Difficulty selection"
         >
           {DIFFICULTIES.map((level) => {
@@ -131,6 +144,11 @@ const Home: FC = () => {
               Easy: 'Easy (Random)',
               Medium: 'Medium (Pattern)',
               Hard: 'Hard (Adaptive AI)',
+            };
+            const modeIcons: Record<Difficulty, string> = {
+              Easy: '🎲',
+              Medium: '🧩',
+              Hard: '🧠',
             };
             return (
               <button
@@ -142,25 +160,44 @@ const Home: FC = () => {
                     adaptiveAI.current.reset();
                   }
                 }}
-                className={`px-3 py-1 sm:px-4 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition ${
-                  difficulty === level ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/20'
+                className={`group px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-1.5 ${
+                  difficulty === level
+                    ? 'bg-white text-indigo-600 shadow-lg scale-105 transform'
+                    : 'text-white hover:bg-white/20 hover:scale-102 transform'
                 }`}
                 title={modeLabels[level]}
+                aria-describedby={`mode-${level.toLowerCase()}-description`}
               >
-                {level}
+                <span className="text-sm">{modeIcons[level]}</span>
+                <span>{level}</span>
               </button>
             );
           })}
         </nav>
+
+        {/* Hidden descriptions for screen readers */}
+        <div className="sr-only">
+          <div id="mode-easy-description">Easy mode uses random AI choices</div>
+          <div id="mode-medium-description">Medium mode uses pattern recognition to predict your moves</div>
+          <div id="mode-hard-description">Hard mode uses adaptive neural network learning</div>
+        </div>
       </header>
 
-      {/* Game Area - True mobile-first responsive design */}
-      <section className="w-full max-w-6xl mx-auto mt-6 px-4" aria-label="Game area">
-        <div className="flex flex-col md:grid md:grid-cols-3 items-center gap-6 md:gap-8 lg:gap-12">
+      {/* Game Area - Enhanced responsive design */}
+      <section className="w-full max-w-5xl mx-auto mt-3 md:mt-4 px-3 relative z-10" aria-label="Game area">
+        <div className="flex flex-col md:grid md:grid-cols-3 items-center gap-3 md:gap-4 lg:gap-6">
           {/* Player Section */}
-          <section className="flex flex-col items-center gap-4 w-full order-1 md:order-1" aria-label="Player controls">
-            <p className="text-lg font-semibold">You</p>
-            <div className="flex flex-row gap-2 md:gap-3 justify-center">
+          <section
+            className="flex flex-col items-center gap-2 w-full order-1 md:order-1 group"
+            aria-label="Player controls"
+          >
+            <div className="text-center space-y-1">
+              <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">
+                You
+              </h2>
+              <p className="text-white/70 text-xs font-medium">Choose your move</p>
+            </div>
+            <div className="flex flex-row gap-2 md:gap-3 justify-center p-2 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
               <ChoiceButton label="🪨" value="rock" onClick={handlePlayerChoice} />
               <ChoiceButton label="📄" value="paper" onClick={handlePlayerChoice} />
               <ChoiceButton label="✂️" value="scissors" onClick={handlePlayerChoice} />
@@ -168,19 +205,27 @@ const Home: FC = () => {
           </section>
 
           {/* VS Divider */}
-          <div className="flex justify-center order-2 md:order-2">
-            <div className="text-2xl md:text-4xl lg:text-5xl font-bold bg-white/10 rounded-full w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center backdrop-blur-sm">
+          <div className="flex justify-center order-2 md:order-2 relative">
+            <div className="text-2xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-yellow-400 via-red-400 to-pink-400 text-transparent bg-clip-text animate-pulse">
               VS
             </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-red-400/20 to-pink-400/20 rounded-full blur-xl scale-150 animate-pulse" />
           </div>
 
           {/* AI Section */}
           <section
-            className="flex flex-col items-center gap-4 w-full relative order-3 md:order-3"
+            className="flex flex-col items-center gap-2 w-full relative order-3 md:order-3 group"
             aria-label="AI opponent"
           >
-            <h2 className="text-lg font-semibold">AI</h2>
-            <div className="flex items-center justify-center relative">
+            <div className="text-center space-y-1">
+              <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">
+                AI Opponent
+              </h2>
+              <p className="text-white/70 text-xs font-medium capitalize">
+                {difficulty} Mode • {AI_MODES[difficulty]} Strategy
+              </p>
+            </div>
+            <div className="flex items-center justify-center relative p-2 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
               <AiAvatar mood={getAiMood()} />
 
               {/* Adaptive AI Thought Bubble */}
@@ -221,24 +266,39 @@ const Home: FC = () => {
         </div>
       </section>
 
-      {/* Result Section - Responsive and stable */}
+      {/* Result Section - Enhanced with better visual hierarchy */}
       <section
-        className="w-full max-w-4xl mt-6 md:mt-8 text-center min-h-[100px] md:min-h-[120px] flex flex-col justify-start px-4"
+        className="w-full max-w-4xl mt-4 md:mt-6 text-center min-h-[80px] md:min-h-[100px] flex flex-col justify-start px-3 relative z-10"
         aria-label="Game results"
+        aria-live="polite"
+        aria-atomic="true"
       >
         <div className="h-8 md:h-10 flex items-center justify-center">
           <AnimatePresence>
             {result && (
               <motion.div
                 key="result"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="text-xl md:text-2xl font-bold drop-shadow-lg"
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+                className="text-lg md:text-2xl lg:text-3xl font-black drop-shadow-2xl"
               >
-                {result === 'win' && '🎉 You Win!'}
-                {result === 'lose' && '💀 You Lose!'}
-                {result === 'draw' && "🤝 It's a Draw!"}
+                {result === 'win' && (
+                  <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                    🎉 Victory!
+                  </span>
+                )}
+                {result === 'lose' && (
+                  <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                    💀 Defeated!
+                  </span>
+                )}
+                {result === 'draw' && (
+                  <span className="bg-gradient-to-r from-yellow-400 to-amber-400 bg-clip-text text-transparent">
+                    🤝 Draw!
+                  </span>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -246,23 +306,54 @@ const Home: FC = () => {
 
         <div className="mt-3 md:mt-4 min-h-[60px] flex flex-col justify-start">
           {result && (
-            <div className="space-y-1 text-base md:text-lg">
-              <p>
-                You chose: <strong>{playerChoice}</strong>
-              </p>
-              <p>
-                AI chose: <strong>{aiChoice}</strong>
-              </p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-2 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-2xl"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-base md:text-lg">
+                <div className="flex items-center justify-center gap-2 p-2 bg-white/10 rounded-lg">
+                  <span className="text-xl">
+                    {playerChoice === 'rock' ? '🪨' : playerChoice === 'paper' ? '📄' : '✂️'}
+                  </span>
+                  <div>
+                    <p className="text-white/70 text-xs font-medium">You chose</p>
+                    <p className="font-bold capitalize text-blue-200 text-sm">{playerChoice}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-2 p-2 bg-white/10 rounded-lg">
+                  <span className="text-xl">{aiChoice === 'rock' ? '🪨' : aiChoice === 'paper' ? '📄' : '✂️'}</span>
+                  <div>
+                    <p className="text-white/70 text-xs font-medium">AI chose</p>
+                    <p className="font-bold capitalize text-purple-200 text-sm">{aiChoice}</p>
+                  </div>
+                </div>
+              </div>
               {difficulty === 'Hard' && adaptiveAI.current && (
-                <div className="mt-2 text-sm text-white/70">
-                  <p>🧠 Games learned from: {adaptiveAI.current.getTrainingProgress().gamesPlayed}</p>
-                  {adaptivePrediction && <p>📊 AI Confidence: {Math.round(adaptivePrediction.confidence * 100)}%</p>}
-                  {adaptiveAI.current.getTrainingProgress().gamesPlayed >= 10 && (
-                    <p>🎯 Neural network is actively learning your patterns!</p>
-                  )}
+                <div className="mt-3 p-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-300/30">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <span className="text-sm">🧠</span>
+                    <h3 className="text-white font-semibold text-sm">AI Learning Progress</h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs text-white/80">
+                    <p className="flex items-center gap-1.5">
+                      <span>📚</span> Games: {adaptiveAI.current.getTrainingProgress().gamesPlayed}
+                    </p>
+                    {adaptivePrediction && (
+                      <p className="flex items-center gap-1.5">
+                        <span>📊</span> Confidence: {Math.round(adaptivePrediction.confidence * 100)}%
+                      </p>
+                    )}
+                    {adaptiveAI.current.getTrainingProgress().gamesPlayed >= 10 && (
+                      <p className="flex items-center gap-1.5 text-green-300">
+                        <span>🎯</span> Neural network active!
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
       </section>
