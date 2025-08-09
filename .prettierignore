@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+
+# Logs
+*.log
+
+# Package manager files
+package-lock.json
+yarn.lock
+
+# Environment files
+.env*
+
+# Generated files
+next-env.d.ts

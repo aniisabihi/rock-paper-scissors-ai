@@ -14,23 +14,26 @@ A modern Rock Paper Scissors game built with Next.js and React, featuring an AI 
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - Yarn (preferred package manager)
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd rock-paper-scissors-ai
 ```
 
 2. Install dependencies:
+
 ```bash
 yarn install
 ```
 
 3. Run the development server:
+
 ```bash
 yarn dev
 ```

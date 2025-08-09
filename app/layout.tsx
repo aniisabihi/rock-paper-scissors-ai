@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Rock Paper Scissors AI",
+  title: 'Rock Paper Scissors AI',
   description:
-    "Play Rock Paper Scissors against an AI with multiple difficulty levels",
+    'Play Rock Paper Scissors against an AI with multiple difficulty levels',
 };
 
 export default function RootLayout({
@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
-      <body className='antialiased'>{children}</body>
+    <html lang="en">
+      <body className="antialiased">{children}</body>
     </html>
   );
 }
