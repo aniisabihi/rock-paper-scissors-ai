@@ -9,11 +9,7 @@ interface ChoiceButtonProps {
   readonly onClick: (value: Choice) => void;
 }
 
-export const ChoiceButton: FC<ChoiceButtonProps> = ({
-  label,
-  value,
-  onClick,
-}) => {
+export const ChoiceButton: FC<ChoiceButtonProps> = ({ label, value, onClick }) => {
   return (
     <button
       type="button"

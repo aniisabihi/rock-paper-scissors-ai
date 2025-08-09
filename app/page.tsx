@@ -67,9 +67,7 @@ const Home: FC = () => {
     <main className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-b from-indigo-500 to-purple-700 p-4 md:p-6 text-white">
       {/* Header */}
       <div className="w-full max-w-4xl flex flex-col items-center gap-4 text-center">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-md px-4">
-          Rock Paper Scissors
-        </h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold drop-shadow-md px-4">Rock Paper Scissors</h1>
 
         {/* Difficulty Selector */}
         <div className="flex gap-2 sm:gap-3 bg-white/10 backdrop-blur-sm p-2 rounded-full">
@@ -78,9 +76,7 @@ const Home: FC = () => {
               key={level}
               onClick={() => setDifficulty(level)}
               className={`px-3 py-1 sm:px-4 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition ${
-                difficulty === level
-                  ? 'bg-white text-indigo-600'
-                  : 'text-white hover:bg-white/20'
+                difficulty === level ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/20'
               }`}
             >
               {level}
@@ -96,21 +92,9 @@ const Home: FC = () => {
           <div className="flex flex-col items-center gap-4 w-full order-1 md:order-1">
             <p className="text-lg font-semibold">You</p>
             <div className="flex flex-row gap-2 md:gap-3 justify-center">
-              <ChoiceButton
-                label="🪨"
-                value="rock"
-                onClick={handlePlayerChoice}
-              />
-              <ChoiceButton
-                label="📄"
-                value="paper"
-                onClick={handlePlayerChoice}
-              />
-              <ChoiceButton
-                label="✂️"
-                value="scissors"
-                onClick={handlePlayerChoice}
-              />
+              <ChoiceButton label="🪨" value="rock" onClick={handlePlayerChoice} />
+              <ChoiceButton label="📄" value="paper" onClick={handlePlayerChoice} />
+              <ChoiceButton label="✂️" value="scissors" onClick={handlePlayerChoice} />
             </div>
           </div>
 

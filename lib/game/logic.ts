@@ -35,9 +35,7 @@ export const predictNextMove = (): Choice => {
     counts[choice]++;
   });
 
-  const predicted = (Object.keys(counts) as Choice[]).reduce((a, b) =>
-    counts[a] > counts[b] ? a : b
-  );
+  const predicted = (Object.keys(counts) as Choice[]).reduce((a, b) => (counts[a] > counts[b] ? a : b));
 
   return predicted;
 };
