@@ -35,13 +35,16 @@ const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible, isTh
 
   const topPrediction = probabilities[0];
 
+  // Early return if no prediction data
+  if (!topPrediction) return null;
+
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0, scale: 0.8, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 10 }}
-        className="absolute top-[-320px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-900/98 via-slate-800/95 to-gray-900/98 backdrop-blur-md rounded-2xl p-3 shadow-2xl border-2 border-purple-400/30 min-w-[280px] max-w-[320px] z-30"
+        className="absolute top-[-220px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-900/98 via-slate-800/95 to-gray-900/98 backdrop-blur-md rounded-2xl p-3 shadow-2xl border-2 border-purple-400/30 min-w-[280px] max-w-[320px] z-30"
       >
         {/* Header */}
         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-300/30">
