@@ -24,9 +24,6 @@ const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction }) => {
 
   return (
     <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-300/30">
-      <div className="text-xl p-1.5 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-lg border border-purple-400/30">
-        🧠
-      </div>
       <div className="flex-1">
         <h3 className="font-bold text-sm bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">
           AI Neural Network

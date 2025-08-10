@@ -22,10 +22,10 @@ const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible }) =>
         initial={{ opacity: 0, scale: 0.8, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 10 }}
-        className="absolute top-[-220px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-gray-900/98 via-slate-800/95 to-gray-900/98 backdrop-blur-md rounded-2xl p-3 shadow-2xl border-2 border-purple-400/30 min-w-[280px] max-w-[320px] z-30"
+        className="absolute top-[-220px] left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border-2 border-white/20 min-w-[220px] max-w-[300px] z-30"
       >
         <BubbleHeader prediction={prediction} />
-        <PredictionBars prediction={prediction} />
+        {/* <PredictionBars prediction={prediction} /> */}
         <TopPrediction prediction={prediction} />
       </motion.div>
     </AnimatePresence>
