@@ -5,7 +5,7 @@ import type { FC } from 'react';
 
 // Local component imports
 import GameHeader from '@/components/game-header';
-import GameArea from '@/components/GameArea';
+import GameArea from '@/components/game-area';
 import GameResults from '@/components/GameResults';
 
 // Custom hook import
