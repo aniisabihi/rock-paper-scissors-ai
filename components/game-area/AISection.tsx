@@ -2,7 +2,7 @@
 
 import type { FC } from 'react';
 import AiAvatar from '@/components/AiAvatar';
-import AIThoughtBubble from '@/components/AIThoughtBubble';
+import AIThoughtBubble from '@/components/game-area/ai-thought-bubble';
 import type { Choice, Result } from '@/lib/game/logic';
 import type { AIConfidence } from '@/lib/game/adaptive-ai';
 
