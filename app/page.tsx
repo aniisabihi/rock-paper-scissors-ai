@@ -10,6 +10,7 @@ import GameResults from '@/components/game-results';
 
 // Custom hook import
 import { useGameLogic } from '@/hooks/useGameLogic';
+import { useAdaptiveAI } from '@/lib/context/adaptive-ai-context';
 
 const Home: FC = () => {
   const {
@@ -20,10 +21,11 @@ const Home: FC = () => {
     isThinking,
     result,
     adaptivePrediction,
-    adaptiveAI,
     handlePlayerChoice,
     handleDifficultyChange,
   } = useGameLogic();
+
+  const { adaptiveAI } = useAdaptiveAI();
 
   return (
     <main
@@ -36,7 +38,7 @@ const Home: FC = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent pointer-events-none" />
 
       {/* Game Header */}
-      <GameHeader difficulty={difficulty} onDifficultyChange={handleDifficultyChange} />
+      <GameHeader difficulty={difficulty} onDifficultyChange={handleDifficultyChange} adaptiveAI={adaptiveAI} />
 
       {/* Game Area */}
       <GameArea

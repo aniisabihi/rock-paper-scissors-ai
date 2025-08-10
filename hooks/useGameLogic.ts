@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 import {
   getRandomChoice,
@@ -10,7 +10,8 @@ import {
   type Result,
   type AIMode,
 } from '@/lib/game/logic';
-import { AdaptiveAI, type AIConfidence } from '@/lib/game/adaptive-ai';
+import { type AIConfidence } from '@/lib/game/adaptive-ai';
+import { useAdaptiveAI } from '@/lib/context/adaptive-ai-context';
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
@@ -30,12 +31,7 @@ export const useGameLogic = () => {
   const [isThinking, setIsThinking] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const [adaptivePrediction, setAdaptivePrediction] = useState<AIConfidence | null>(null);
-  const adaptiveAI = useRef<AdaptiveAI | null>(null);
-
-  // Initialize adaptive AI
-  useEffect(() => {
-    adaptiveAI.current = new AdaptiveAI();
-  }, []);
+  const { adaptiveAI } = useAdaptiveAI();
 
   const handlePlayerChoice = useCallback(
     async (choice: Choice) => {
@@ -51,26 +47,45 @@ export const useGameLogic = () => {
       if (currentMode === 'pattern') {
         setAiPrediction(predictNextMove());
         recordPlayerChoice(choice);
-      } else if (currentMode === 'adaptive' && adaptiveAI.current) {
-        // Get AI prediction before the player's move is recorded
-        const prediction = await adaptiveAI.current.predictNextMove();
-        setAdaptivePrediction(prediction);
+      } else if (currentMode === 'adaptive' && adaptiveAI) {
+        try {
+          // Get AI prediction before the player's move is recorded
+          const prediction = await adaptiveAI.predictNextMove();
+          setAdaptivePrediction(prediction);
+          console.log('🤖 Adaptive AI prediction:', prediction);
+        } catch (error) {
+          console.error('❌ Adaptive AI prediction failed:', error);
+          // Fallback to pattern prediction
+          setAiPrediction(predictNextMove());
+        }
+      } else if (currentMode === 'adaptive' && !adaptiveAI) {
+        // Adaptive AI not ready yet, fallback to pattern
+        setAiPrediction(predictNextMove());
+        recordPlayerChoice(choice);
       }
 
       // Simulate AI "thinking"
       setTimeout(async () => {
         try {
-          const ai = await getChoiceForMode(currentMode, adaptiveAI.current);
+          const ai = await getChoiceForMode(currentMode, adaptiveAI);
           const gameResult = determineResult(choice, ai);
 
           setAiChoice(ai);
           setResult(gameResult);
 
           // Record the game for adaptive learning
-          if (currentMode === 'adaptive' && adaptiveAI.current) {
-            adaptiveAI.current.recordGame(choice, ai, gameResult);
+          if (currentMode === 'adaptive' && adaptiveAI) {
+            try {
+              adaptiveAI.recordGame(choice, ai, gameResult);
+              console.log('📝 Game recorded for adaptive learning');
+            } catch (error) {
+              console.error('❌ Failed to record game for adaptive learning:', error);
+            }
           } else if (currentMode === 'pattern') {
             // Already recorded above for pattern mode
+          } else if (currentMode === 'adaptive' && !adaptiveAI) {
+            // Adaptive AI not ready yet, record for pattern mode
+            recordPlayerChoice(choice);
           }
 
           setIsThinking(false);
@@ -84,16 +99,19 @@ export const useGameLogic = () => {
         }
       }, AI_THINKING_DELAY);
     },
-    [difficulty]
+    [adaptiveAI, difficulty]
   );
 
-  const handleDifficultyChange = useCallback((newDifficulty: Difficulty) => {
-    setDifficulty(newDifficulty);
-    // Reset adaptive AI when switching modes
-    if (newDifficulty !== 'Hard' && adaptiveAI.current) {
-      adaptiveAI.current.reset();
-    }
-  }, []);
+  const handleDifficultyChange = useCallback(
+    (newDifficulty: Difficulty) => {
+      setDifficulty(newDifficulty);
+      // Reset adaptive AI when switching modes
+      if (newDifficulty !== 'Hard' && adaptiveAI) {
+        adaptiveAI.reset();
+      }
+    },
+    [adaptiveAI]
+  );
 
   return {
     // State
@@ -104,7 +122,7 @@ export const useGameLogic = () => {
     isThinking,
     result,
     adaptivePrediction,
-    adaptiveAI: adaptiveAI.current,
+    adaptiveAI: adaptiveAI,
 
     // Actions
     handlePlayerChoice,

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AdaptiveAIProvider } from '@/lib/context/adaptive-ai-context';
 
 export const metadata: Metadata = {
   title: 'Rock Paper Scissors AI | Adaptive Learning Game',
@@ -28,7 +29,9 @@ export default function RootLayout({
       <head>
         <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js" async></script>
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <AdaptiveAIProvider>{children}</AdaptiveAIProvider>
+      </body>
     </html>
   );
 }
