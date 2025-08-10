@@ -6,7 +6,7 @@ import type { FC } from 'react';
 // Local component imports
 import GameHeader from '@/components/game-header';
 import GameArea from '@/components/game-area';
-import GameResults from '@/components/GameResults';
+import GameResults from '@/components/game-results';
 
 // Custom hook import
 import { useGameLogic } from '@/hooks/useGameLogic';
