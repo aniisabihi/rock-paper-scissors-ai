@@ -1,8 +1,8 @@
 'use client';
 
 import type { FC } from 'react';
-import AiAvatar from '@/components/AiAvatar';
-import AIThoughtBubble from '@/components/game-area/ai-thought-bubble';
+import AiAvatar from '@/components/game-area/ai-section/AiAvatar';
+import AIThoughtBubble from '@/components/game-area/ai-section/ai-thought-bubble';
 import type { Choice, Result } from '@/lib/game/logic';
 import type { AIConfidence } from '@/lib/game/adaptive-ai';
 

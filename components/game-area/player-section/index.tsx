@@ -1,7 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { ChoiceButton } from '@/components/ChoiceButton';
+import { ChoiceButton } from '@/components/game-area/player-section/ChoiceButton';
 import type { Choice } from '@/lib/game/logic';
 
 interface PlayerSectionProps {

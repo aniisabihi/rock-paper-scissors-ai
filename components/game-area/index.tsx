@@ -1,9 +1,9 @@
 'use client';
 
 import type { FC } from 'react';
-import PlayerSection from './PlayerSection';
+import PlayerSection from './player-section';
 import VSDivider from './VSDivider';
-import AISection from './AISection';
+import AISection from './ai-section';
 import type { Choice, Result } from '@/lib/game/logic';
 import type { AIConfidence } from '@/lib/game/adaptive-ai';
 
