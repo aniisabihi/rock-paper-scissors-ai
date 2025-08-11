@@ -389,7 +389,7 @@ export class AdaptiveAI {
           console.log('🧠 Attempting to create neural network with ml5...');
           neuralNetworkInstance = this.ml5.neuralNetwork({
             task: 'regression',
-            debug: true, // Enable debug to see what's happening
+            debug: false, // Disable debug to remove performance visualization
             layers: [
               {
                 type: 'dense',

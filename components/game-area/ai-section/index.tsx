@@ -3,6 +3,7 @@
 import type { FC } from 'react';
 import AiAvatar from '@/components/game-area/ai-section/AiAvatar';
 import AIThoughtBubble from '@/components/game-area/ai-section/ai-thought-bubble';
+import ThoughtBubbleTail from '@/components/game-area/ai-section/ThoughtBubbleTail';
 import type { Choice, Result } from '@/lib/game/logic';
 import type { AIConfidence, AdaptiveAI } from '@/lib/game/adaptive-ai';
 
@@ -58,26 +59,16 @@ const AISection: FC<AISectionProps> = ({
         />
 
         {/* Pattern Recognition Prediction */}
-        {difficulty === 'Medium' && aiPrediction && (
-          <div className="absolute top-[-80px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-dark-800/95 to-dark-700/95 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-accent-400/30 min-w-[200px] text-center z-20">
+        {difficulty === 'Medium' && (aiPrediction || isThinking) && (
+          <div className="absolute top-[-150px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-dark-800/95 to-dark-700/95 backdrop-blur-md rounded-xl p-3 shadow-2xl border-2 border-accent-400/30 min-w-[200px] text-center z-20">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">🧩</span>
-              <h3 className="text-accent-200 font-bold text-sm">Pattern Detected</h3>
+              <span className="text-lg">{isThinking ? '🤔' : '🧩'}</span>
+              <h3 className="text-accent-200 font-bold text-sm">{isThinking ? 'AI Thinking' : 'Pattern Detected'}</h3>
             </div>
-            <p className="text-white/90 text-xs">
-              I think you&apos;ll choose <span className="font-bold text-accent-300 capitalize">{aiPrediction}</span>
+            <p className="text-white/90 text-xs mb-2">
+              {isThinking ? 'Analyzing your patterns...' : `I think you'll choose ${aiPrediction}`}
             </p>
-          </div>
-        )}
-
-        {/* Thinking State */}
-        {isThinking && difficulty === 'Medium' && (
-          <div className="absolute top-[-80px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-dark-800/95 to-dark-700/95 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-accent-400/30 min-w-[200px] text-center z-20">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">🤔</span>
-              <h3 className="text-accent-200 font-bold text-sm">AI Thinking</h3>
-            </div>
-            <p className="text-white/90 text-xs">Analyzing your patterns...</p>
+            <ThoughtBubbleTail className="border-accent-400/30" />
           </div>
         )}
       </div>

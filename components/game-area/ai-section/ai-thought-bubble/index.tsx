@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BubbleHeader from './BubbleHeader';
 import PredictionBars from './PredictionBars';
 import TopPrediction from './TopPrediction';
+import ThoughtBubbleTail from '../ThoughtBubbleTail';
 import type { AIConfidence } from '@/lib/game/adaptive-ai';
 import type { AdaptiveAI } from '@/lib/game/adaptive-ai';
 
@@ -29,6 +30,7 @@ const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible, adap
         <BubbleHeader prediction={prediction} adaptiveAI={adaptiveAI} onOpenInfoModal={onOpenInfoModal} />
         {/* <PredictionBars prediction={prediction} /> */}
         <TopPrediction prediction={prediction} />
+        <ThoughtBubbleTail />
       </motion.div>
     </AnimatePresence>
   );
