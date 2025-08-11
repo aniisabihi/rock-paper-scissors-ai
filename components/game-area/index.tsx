@@ -31,10 +31,8 @@ const GameArea: FC<GameAreaProps> = ({
   isLoading = false,
 }) => {
   return (
-    <section className="w-full max-w-5xl mx-auto mt-8 md:mt-10 px-3 relative z-10" aria-label="Game area">
-      <div className="flex flex-col md:grid md:grid-cols-3 items-center gap-3 md:gap-4 lg:gap-6">
-        <PlayerSection onPlayerChoice={onPlayerChoice} />
-        <VSDivider />
+    <section className="w-full max-w-5xl mx-auto mt-50 md:mt-10 px-3 relative z-10" aria-label="Game area">
+      <div className="flex flex-col md:grid grid-cols-3 items-center gap-3 md:gap-4 lg:gap-6">
         <AISection
           difficulty={difficulty}
           aiPrediction={aiPrediction}
@@ -44,6 +42,8 @@ const GameArea: FC<GameAreaProps> = ({
           adaptiveAI={adaptiveAI}
           isLoading={isLoading}
         />
+        <VSDivider />
+        <PlayerSection onPlayerChoice={onPlayerChoice} />
       </div>
     </section>
   );

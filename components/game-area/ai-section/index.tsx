@@ -40,10 +40,7 @@ const AISection: FC<AISectionProps> = ({
   };
 
   return (
-    <section
-      className="flex flex-col items-center gap-2 w-full relative order-3 md:order-3 group"
-      aria-label="AI opponent"
-    >
+    <section className="flex flex-col items-center gap-2 w-full relative group" aria-label="AI opponent">
       <div className="text-center space-y-1">
         <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">
           AI

@@ -10,7 +10,7 @@ interface PlayerSectionProps {
 
 const PlayerSection: FC<PlayerSectionProps> = ({ onPlayerChoice }) => {
   return (
-    <section className="flex flex-col items-center gap-2 w-full order-1 md:order-1 group" aria-label="Player controls">
+    <section className="flex flex-col items-center gap-2 w-full group" aria-label="Player controls">
       <div className="text-center space-y-1">
         <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">
           You
