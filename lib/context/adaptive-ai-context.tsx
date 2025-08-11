@@ -5,6 +5,7 @@ import { AdaptiveAI } from '@/lib/game/adaptive-ai';
 
 interface AdaptiveAIContextType {
   adaptiveAI: AdaptiveAI | null;
+  isLoading: boolean;
 }
 
 const AdaptiveAIContext = createContext<AdaptiveAIContextType | null>(null);
@@ -23,16 +24,27 @@ interface AdaptiveAIProviderProps {
 
 export const AdaptiveAIProvider: React.FC<AdaptiveAIProviderProps> = ({ children }) => {
   const adaptiveAI = useRef<AdaptiveAI | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsClient(true);
-    adaptiveAI.current = new AdaptiveAI();
+    const initializeAI = async () => {
+      try {
+        adaptiveAI.current = new AdaptiveAI();
+        // Wait a bit for the AI to initialize
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to initialize AdaptiveAI:', error);
+        setIsLoading(false);
+      }
+    };
+
+    initializeAI();
   }, []);
 
-  // Provide a default value during SSR and initial render
   const contextValue = {
-    adaptiveAI: isClient ? adaptiveAI.current : null,
+    adaptiveAI: adaptiveAI.current,
+    isLoading,
   };
 
   return <AdaptiveAIContext.Provider value={contextValue}>{children}</AdaptiveAIContext.Provider>;

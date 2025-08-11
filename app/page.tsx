@@ -1,14 +1,9 @@
 'use client';
 
-// React imports
 import type { FC } from 'react';
-
-// Local component imports
 import GameHeader from '@/components/game-header';
 import GameArea from '@/components/game-area';
 import GameResults from '@/components/game-results';
-
-// Custom hook import
 import { useGameLogic } from '@/hooks/useGameLogic';
 import { useAdaptiveAI } from '@/lib/context/adaptive-ai-context';
 
@@ -25,7 +20,7 @@ const Home: FC = () => {
     handleDifficultyChange,
   } = useGameLogic();
 
-  const { adaptiveAI } = useAdaptiveAI();
+  const { adaptiveAI, isLoading } = useAdaptiveAI();
 
   return (
     <main
@@ -48,17 +43,12 @@ const Home: FC = () => {
         result={result}
         adaptivePrediction={adaptivePrediction}
         onPlayerChoice={handlePlayerChoice}
+        adaptiveAI={adaptiveAI}
+        isLoading={isLoading}
       />
 
       {/* Game Results */}
-      <GameResults
-        result={result}
-        playerChoice={playerChoice}
-        aiChoice={aiChoice}
-        difficulty={difficulty}
-        adaptivePrediction={adaptivePrediction}
-        adaptiveAI={adaptiveAI}
-      />
+      <GameResults result={result} playerChoice={playerChoice} aiChoice={aiChoice} />
     </main>
   );
 };

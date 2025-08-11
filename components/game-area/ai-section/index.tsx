@@ -14,9 +14,19 @@ interface AISectionProps {
   isThinking: boolean;
   result: Result | null;
   adaptivePrediction: AIConfidence | null;
+  adaptiveAI: { getTrainingProgress: () => { gamesPlayed: number } } | null;
+  isLoading?: boolean;
 }
 
-const AISection: FC<AISectionProps> = ({ difficulty, aiPrediction, isThinking, result, adaptivePrediction }) => {
+const AISection: FC<AISectionProps> = ({
+  difficulty,
+  aiPrediction,
+  isThinking,
+  result,
+  adaptivePrediction,
+  adaptiveAI,
+  isLoading = false,
+}) => {
   const getAiMood = (): 'idle' | 'win' | 'lose' | 'draw' => {
     if (isThinking || !result) return 'idle';
 
@@ -47,6 +57,8 @@ const AISection: FC<AISectionProps> = ({ difficulty, aiPrediction, isThinking, r
           prediction={adaptivePrediction}
           isVisible={difficulty === 'Hard' && (isThinking || !!adaptivePrediction)}
           isThinking={isThinking}
+          adaptiveAI={adaptiveAI}
+          isLoading={isLoading}
         />
 
         {/* Pattern Recognition Prediction */}

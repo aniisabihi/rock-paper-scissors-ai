@@ -30,7 +30,7 @@ const InfoModal: FC<InfoModalProps> = ({ isOpen, onClose }) => {
           <div className="space-y-4 text-left">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <h3 className="text-lg font-bold text-white mb-2">🎮 How to Play</h3>
+                <h3 className="text-lg font-bold text-white mb-2">How to Play</h3>
                 <p className="text-white/90 text-sm leading-relaxed">
                   Choose Rock, Paper, or Scissors to play against the AI. Rock crushes Scissors, Scissors cuts Paper,
                   and Paper covers Rock. The AI will adapt its strategy based on your difficulty choice.
@@ -38,7 +38,7 @@ const InfoModal: FC<InfoModalProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-white mb-2">🤖 AI Difficulties</h3>
+                <h3 className="text-lg font-bold text-white mb-2">AI Difficulties</h3>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <span className="text-lg">🎲</span>
@@ -68,7 +68,7 @@ const InfoModal: FC<InfoModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-white mb-2">🧠 AI Learning</h3>
+              <h3 className="text-lg font-bold text-white mb-2">AI Learning</h3>
               <p className="text-white/90 text-sm leading-relaxed">
                 The AI analyzes your playing patterns and adapts its strategy in real-time. In Hard mode, it uses a
                 neural network that continuously learns and improves, making each game more challenging than the last!

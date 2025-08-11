@@ -11,9 +11,11 @@ interface AIThoughtBubbleProps {
   prediction: AIConfidence | null;
   isVisible: boolean;
   isThinking: boolean;
+  adaptiveAI: { getTrainingProgress: () => { gamesPlayed: number } } | null;
+  isLoading?: boolean;
 }
 
-const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible }) => {
+const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible, adaptiveAI, isLoading = false }) => {
   if (!isVisible || !prediction) return null;
 
   return (
@@ -24,7 +26,7 @@ const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible }) =>
         exit={{ opacity: 0, scale: 0.8, y: 10 }}
         className="absolute top-[-220px] left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-md rounded-2xl p-3 shadow-2xl border-2 border-white/20 min-w-[220px] max-w-[300px] z-30"
       >
-        <BubbleHeader prediction={prediction} />
+        <BubbleHeader prediction={prediction} adaptiveAI={adaptiveAI} isLoading={isLoading} />
         {/* <PredictionBars prediction={prediction} /> */}
         <TopPrediction prediction={prediction} />
       </motion.div>

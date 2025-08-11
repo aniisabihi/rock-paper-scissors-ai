@@ -16,6 +16,8 @@ interface GameAreaProps {
   result: Result | null;
   adaptivePrediction: AIConfidence | null;
   onPlayerChoice: (choice: Choice) => void;
+  adaptiveAI: { getTrainingProgress: () => { gamesPlayed: number } } | null;
+  isLoading?: boolean;
 }
 
 const GameArea: FC<GameAreaProps> = ({
@@ -25,6 +27,8 @@ const GameArea: FC<GameAreaProps> = ({
   result,
   adaptivePrediction,
   onPlayerChoice,
+  adaptiveAI,
+  isLoading = false,
 }) => {
   return (
     <section className="w-full max-w-5xl mx-auto mt-8 md:mt-10 px-3 relative z-10" aria-label="Game area">
@@ -37,6 +41,8 @@ const GameArea: FC<GameAreaProps> = ({
           isThinking={isThinking}
           result={result}
           adaptivePrediction={adaptivePrediction}
+          adaptiveAI={adaptiveAI}
+          isLoading={isLoading}
         />
       </div>
     </section>

@@ -5,9 +5,11 @@ import type { AIConfidence } from '@/lib/game/adaptive-ai';
 
 interface BubbleHeaderProps {
   prediction: AIConfidence;
+  adaptiveAI: { getTrainingProgress: () => { gamesPlayed: number } } | null;
+  isLoading?: boolean;
 }
 
-const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction }) => {
+const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction, adaptiveAI, isLoading = false }) => {
   const formatPercentage = (value: number): number => Math.round(value * 100);
 
   const getConfidenceColor = (confidence: number): string => {
@@ -28,6 +30,9 @@ const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction }) => {
         <h3 className="font-bold text-sm bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">
           AI Neural Network
         </h3>
+        <p className="text-xs font-semibold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">
+          Games: {isLoading ? 'Loading...' : adaptiveAI ? adaptiveAI.getTrainingProgress()?.gamesPlayed || 0 : '...'}
+        </p>
         <p className={`text-xs font-semibold ${getConfidenceColor(prediction.confidence)}`}>
           {getConfidenceText(prediction.confidence)} • {formatPercentage(prediction.confidence)}%
         </p>

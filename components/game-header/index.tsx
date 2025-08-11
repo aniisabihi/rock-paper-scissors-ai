@@ -48,14 +48,16 @@ const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adapt
   };
 
   return (
-    <header className="w-full max-w-3xl flex flex-col items-center gap-4 text-center relative z-50">
+    <header className="w-full max-w-3xl flex flex-col items-center gap-4 mt-4 text-center relative z-50 h-[140px]">
       <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-2xl px-2 tracking-tight">
         Rock Paper Scissors
       </h1>
       <InfoButton isOpen={isInfoOpen} onToggle={handleInfoToggle} />
       <InfoModal isOpen={isInfoOpen} onClose={handleInfoClose} />
       <DifficultySelector difficulty={difficulty} onDifficultyChange={onDifficultyChange} />
-      {getAdaptiveAIStatus()}
+      <div className="h-[40px] flex items-center justify-center">
+        {difficulty === 'Hard' && adaptiveAI ? getAdaptiveAIStatus() : <div className="h-[40px]" />}
+      </div>
     </header>
   );
 };
