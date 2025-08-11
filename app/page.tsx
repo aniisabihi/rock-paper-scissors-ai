@@ -1,9 +1,12 @@
 'use client';
 
 import type { FC } from 'react';
+import { useState } from 'react';
 import GameHeader from '@/components/game-header';
 import GameArea from '@/components/game-area';
 import GameResults from '@/components/game-results';
+import InfoButton from '@/components/game-header/InfoButton';
+import InfoModal from '@/components/game-header/InfoModal';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import { useAdaptiveAI } from '@/lib/context/adaptive-ai-context';
 
@@ -21,6 +24,15 @@ const Home: FC = () => {
   } = useGameLogic();
 
   const { adaptiveAI, isLoading } = useAdaptiveAI();
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  const handleInfoToggle = () => {
+    setIsInfoOpen(!isInfoOpen);
+  };
+
+  const handleInfoClose = () => {
+    setIsInfoOpen(false);
+  };
 
   return (
     <main
@@ -31,6 +43,10 @@ const Home: FC = () => {
       {/* Ambient background elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.3),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,119,198,0.3),transparent_50%)] pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent pointer-events-none" />
+
+      {/* Info Button - Fixed in top right corner */}
+      <InfoButton isOpen={isInfoOpen} onToggle={handleInfoToggle} />
+      <InfoModal isOpen={isInfoOpen} onClose={handleInfoClose} />
 
       {/* Game Header */}
       <GameHeader difficulty={difficulty} onDifficultyChange={handleDifficultyChange} adaptiveAI={adaptiveAI} />

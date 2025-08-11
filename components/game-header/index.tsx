@@ -1,10 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { useState } from 'react';
 
-import InfoButton from './InfoButton';
-import InfoModal from './InfoModal';
 import DifficultySelector from './DifficultySelector';
 import type { AdaptiveAI } from '@/lib/game/adaptive-ai';
 
@@ -17,16 +14,6 @@ interface GameHeaderProps {
 }
 
 const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adaptiveAI }) => {
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
-
-  const handleInfoToggle = () => {
-    setIsInfoOpen(!isInfoOpen);
-  };
-
-  const handleInfoClose = () => {
-    setIsInfoOpen(false);
-  };
-
   const getAdaptiveAIStatus = () => {
     if (difficulty !== 'Hard' || !adaptiveAI) return null;
 
@@ -52,8 +39,6 @@ const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adapt
       <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-2xl px-2 tracking-tight">
         Rock Paper Scissors
       </h1>
-      <InfoButton isOpen={isInfoOpen} onToggle={handleInfoToggle} />
-      <InfoModal isOpen={isInfoOpen} onClose={handleInfoClose} />
       <DifficultySelector difficulty={difficulty} onDifficultyChange={onDifficultyChange} />
       <div className="h-[40px] flex items-center justify-center">
         {difficulty === 'Hard' && adaptiveAI ? getAdaptiveAIStatus() : <div className="h-[40px]" />}
@@ -63,4 +48,4 @@ const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adapt
 };
 
 export default GameHeader;
-export { InfoButton, InfoModal, DifficultySelector };
+export { DifficultySelector };
