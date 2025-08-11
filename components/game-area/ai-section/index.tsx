@@ -42,7 +42,7 @@ const AISection: FC<AISectionProps> = ({
   return (
     <section className="flex flex-col items-center gap-2 w-full relative group" aria-label="AI opponent">
       <div className="text-center space-y-1">
-        <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-200 to-pink-200 bg-clip-text text-transparent">
+        <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-accent-200 to-accent-300 bg-clip-text text-transparent">
           AI
         </h2>
       </div>
@@ -60,23 +60,23 @@ const AISection: FC<AISectionProps> = ({
 
         {/* Pattern Recognition Prediction */}
         {difficulty === 'Medium' && aiPrediction && (
-          <div className="absolute top-[-80px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-blue-900/95 to-indigo-900/95 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-blue-400/30 min-w-[200px] text-center z-20">
+          <div className="absolute top-[-80px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-dark-800/95 to-dark-700/95 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-accent-400/30 min-w-[200px] text-center z-20">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🧩</span>
-              <h3 className="text-blue-200 font-bold text-sm">Pattern Detected</h3>
+              <h3 className="text-accent-200 font-bold text-sm">Pattern Detected</h3>
             </div>
             <p className="text-white/90 text-xs">
-              I think you&apos;ll choose <span className="font-bold text-blue-300 capitalize">{aiPrediction}</span>
+              I think you&apos;ll choose <span className="font-bold text-accent-300 capitalize">{aiPrediction}</span>
             </p>
           </div>
         )}
 
         {/* Thinking State */}
         {isThinking && difficulty === 'Medium' && (
-          <div className="absolute top-[-80px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-purple-900/95 to-pink-900/95 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-purple-400/30 min-w-[200px] text-center z-20">
+          <div className="absolute top-[-80px] left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-dark-800/95 to-dark-700/95 backdrop-blur-md rounded-xl p-3 shadow-2xl border border-accent-400/30 min-w-[200px] text-center z-20">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🤔</span>
-              <h3 className="text-purple-200 font-bold text-sm">AI Thinking</h3>
+              <h3 className="text-accent-200 font-bold text-sm">AI Thinking</h3>
             </div>
             <p className="text-white/90 text-xs">Analyzing your patterns...</p>
           </div>

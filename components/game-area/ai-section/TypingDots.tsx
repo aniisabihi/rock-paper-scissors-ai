@@ -12,7 +12,7 @@ const TypingDots: FC = () => {
       {DOT_INDICES.map((i) => (
         <motion.span
           key={i}
-          className="w-2.5 h-2.5 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full shadow-lg"
+          className="w-2.5 h-2.5 bg-gradient-to-br from-accent-400 to-accent-500 rounded-full shadow-lg"
           animate={{
             y: [0, -6, 0],
             scale: [1, 1.2, 1],

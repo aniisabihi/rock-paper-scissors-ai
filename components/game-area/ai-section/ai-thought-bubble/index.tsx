@@ -24,7 +24,7 @@ const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible, adap
         initial={{ opacity: 0, scale: 0.8, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 10 }}
-        className="absolute top-[-220px] left-1/2 transform -translate-x-1/2 bg-white/10 backdrop-blur-md rounded-2xl p-2 shadow-2xl border-2 border-white/20 min-w-[200px] max-w-[300px] z-30"
+        className="absolute top-[-220px] left-1/2 transform -translate-x-1/2 bg-dark-800/90 backdrop-blur-md rounded-2xl p-2 shadow-2xl border-2 border-accent-400/30 min-w-[200px] max-w-[300px] z-30"
       >
         <BubbleHeader prediction={prediction} adaptiveAI={adaptiveAI} isLoading={isLoading} />
         {/* <PredictionBars prediction={prediction} /> */}

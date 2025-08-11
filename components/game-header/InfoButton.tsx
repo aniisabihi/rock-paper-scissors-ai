@@ -12,7 +12,7 @@ const InfoButton: FC<InfoButtonProps> = ({ isOpen, onToggle }) => {
   return (
     <button
       onClick={onToggle}
-      className="fixed top-4 right-4 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all duration-300 border border-white/20 z-50 flex items-center justify-center"
+      className="fixed top-4 right-4 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-dark-800/80 backdrop-blur-md rounded-full text-white hover:bg-accent-500/20 transition-all duration-300 border border-accent-400/30 z-50 flex items-center justify-center"
       aria-label="Toggle game information"
       aria-expanded={isOpen}
     >

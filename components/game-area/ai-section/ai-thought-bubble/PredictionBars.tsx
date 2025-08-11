@@ -45,7 +45,7 @@ const PredictionBars: FC<PredictionBarsProps> = ({ prediction }) => {
                 transition={{ duration: 0.8, delay: 0.3 + index * 0.1, ease: 'easeOut' }}
                 className={`h-2 rounded-full shadow-inner ${
                   item === topPrediction
-                    ? 'bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400'
+                    ? 'bg-gradient-to-r from-accent-400 via-accent-500 to-accent-600'
                     : 'bg-gradient-to-r from-gray-500 to-gray-600'
                 }`}
               />

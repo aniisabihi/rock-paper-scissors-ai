@@ -22,7 +22,7 @@ const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adapt
       <div className="mt-2 text-xs">
         <span
           className={`px-2 py-1 rounded-full ${
-            status.isWorking ? 'bg-green-600/80 text-green-100' : 'bg-yellow-600/80 text-yellow-100'
+            status.isWorking ? 'bg-accent-600/80 text-accent-100' : 'bg-yellow-600/80 text-yellow-100'
           }`}
         >
           🤖 {status.status}
@@ -36,7 +36,7 @@ const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adapt
 
   return (
     <header className="w-full max-w-3xl flex flex-col items-center gap-4 mt-4 text-center relative z-50 h-[140px]">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent drop-shadow-2xl px-2 tracking-tight">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black bg-gradient-to-r from-white via-accent-200 to-accent-300 bg-clip-text text-transparent drop-shadow-2xl px-2 tracking-tight">
         Rock Paper Scissors
       </h1>
       <DifficultySelector difficulty={difficulty} onDifficultyChange={onDifficultyChange} />

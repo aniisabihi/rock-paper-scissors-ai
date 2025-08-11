@@ -25,12 +25,12 @@ const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction, adaptiveAI, isLoading
   };
 
   return (
-    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-purple-300/30">
+    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-accent-300/30">
       <div className="flex-1">
-        <h3 className="font-bold text-sm bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">
+        <h3 className="font-bold text-sm bg-gradient-to-r from-accent-200 to-accent-300 bg-clip-text text-transparent">
           AI Neural Network
         </h3>
-        <p className="text-xs font-semibold bg-gradient-to-r from-purple-200 to-blue-200 bg-clip-text text-transparent">
+        <p className="text-xs font-semibold bg-gradient-to-r from-accent-200 to-accent-300 bg-clip-text text-transparent">
           Games: {isLoading ? 'Loading...' : adaptiveAI ? adaptiveAI.getTrainingProgress()?.gamesPlayed || 0 : '...'}
         </p>
         <p className={`text-xs font-semibold ${getConfidenceColor(prediction.confidence)}`}>

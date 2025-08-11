@@ -17,11 +17,11 @@ const InfoModal: FC<InfoModalProps> = ({ isOpen, onClose }) => {
 
       {/* Info Modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4 z-[9999] pointer-events-none">
-        <div className="w-full max-w-[600px] bg-white/10 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-white/20 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300 pointer-events-auto relative">
+        <div className="w-full max-w-[600px] bg-dark-800/90 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-accent-400/30 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300 pointer-events-auto relative">
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-110"
+            className="absolute top-3 right-3 w-8 h-8 bg-accent-500/20 hover:bg-accent-500/30 rounded-full flex items-center justify-center text-white transition-all duration-200 hover:scale-110"
             aria-label="Close modal"
           >
             <span className="text-lg font-bold">×</span>

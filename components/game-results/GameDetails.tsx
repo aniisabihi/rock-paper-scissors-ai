@@ -18,21 +18,21 @@ const GameDetails: FC<GameDetailsProps> = ({ result, playerChoice, aiChoice }) =
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="space-y-2 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-2xl"
+      className="space-y-2 bg-dark-800/80 backdrop-blur-md rounded-xl p-4 border border-accent-400/30 shadow-2xl"
     >
       <div className="grid grid-cols-2 gap-3 text-base md:text-lg">
-        <div className="flex items-center justify-center gap-2 p-2 bg-white/10 rounded-lg">
+        <div className="flex items-center justify-center gap-2 p-2 bg-dark-700/50 rounded-lg">
           <span className="text-xl">{playerChoice === 'rock' ? '🪨' : playerChoice === 'paper' ? '📄' : '✂️'}</span>
           <div>
             <p className="text-white/70 text-xs font-medium">You chose</p>
-            <p className="font-bold capitalize text-blue-200 text-sm">{playerChoice}</p>
+            <p className="font-bold capitalize text-accent-200 text-sm">{playerChoice}</p>
           </div>
         </div>
-        <div className="flex items-center justify-center gap-2 p-2 bg-white/10 rounded-lg">
+        <div className="flex items-center justify-center gap-2 p-2 bg-dark-700/50 rounded-lg">
           <span className="text-xl">{aiChoice === 'rock' ? '🪨' : aiChoice === 'paper' ? '📄' : '✂️'}</span>
           <div>
             <p className="text-white/70 text-xs font-medium">AI chose</p>
-            <p className="font-bold capitalize text-purple-200 text-sm">{aiChoice}</p>
+            <p className="font-bold capitalize text-accent-300 text-sm">{aiChoice}</p>
           </div>
         </div>
       </div>

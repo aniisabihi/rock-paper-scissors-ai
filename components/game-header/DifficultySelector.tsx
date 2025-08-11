@@ -27,7 +27,7 @@ const DifficultySelector: FC<DifficultySelectorProps> = ({ difficulty, onDifficu
   return (
     <>
       <nav
-        className="flex gap-2 sm:gap-3 bg-white/10 backdrop-blur-md p-2 rounded-xl shadow-2xl border border-white/20"
+        className="flex gap-2 sm:gap-3 bg-dark-800/80 backdrop-blur-md p-2 rounded-xl shadow-2xl border border-accent-400/30"
         aria-label="Difficulty selection"
       >
         {DIFFICULTIES.map((level) => (
@@ -36,8 +36,8 @@ const DifficultySelector: FC<DifficultySelectorProps> = ({ difficulty, onDifficu
             onClick={() => onDifficultyChange(level)}
             className={`group px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-1.5 ${
               difficulty === level
-                ? 'bg-white text-indigo-600 shadow-lg scale-105 transform'
-                : 'text-white hover:bg-white/20 hover:scale-102 transform'
+                ? 'bg-accent-500 text-dark-900 shadow-lg scale-105 transform'
+                : 'text-white hover:bg-accent-500/20 hover:scale-102 transform'
             }`}
             title={modeLabels[level]}
             aria-describedby={`mode-${level.toLowerCase()}-description`}

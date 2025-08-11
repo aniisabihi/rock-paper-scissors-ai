@@ -26,7 +26,7 @@ const TopPrediction: FC<TopPredictionProps> = ({ prediction }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.6 }}
-      className="bg-white/10 backdrop-blur-md rounded-lg p-2 border border-white/20"
+      className="bg-dark-700/50 backdrop-blur-md rounded-lg p-2 border border-accent-400/30"
     >
       <div className="flex items-center gap-2 mb-1">
         <h4 className="text-white font-semibold text-sm">Top Prediction</h4>
@@ -35,9 +35,8 @@ const TopPrediction: FC<TopPredictionProps> = ({ prediction }) => {
         <span className="text-lg">{topPrediction.emoji}</span>
         <div className="flex-1">
           <p className="text-white/90 text-xs">
-            I&apos;m <span className="font-bold text-blue-300">{formatPercentage(topPrediction.probability)}%</span>{' '}
-            confident you&apos;ll choose{' '}
-            <span className="font-bold text-blue-300 capitalize">{topPrediction.choice}</span>
+            I&apos;m <span className="font-bold text-accent-300">{formatPercentage(topPrediction.probability)}%</span>{' '}
+            confident you&apos;ll choose <span className="text-accent-300 capitalize">{topPrediction.choice}</span>
           </p>
         </div>
       </div>

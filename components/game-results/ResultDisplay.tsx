@@ -22,7 +22,7 @@ const ResultDisplay: FC<ResultDisplayProps> = ({ result }) => {
             className="text-2xl lg:text-3xl font-black drop-shadow-2xl"
           >
             {result === 'win' && (
-              <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-accent-400 to-accent-500 bg-clip-text text-transparent">
                 🎉 Victory!
               </span>
             )}

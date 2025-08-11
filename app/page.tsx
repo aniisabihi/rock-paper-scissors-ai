@@ -36,13 +36,13 @@ const Home: FC = () => {
 
   return (
     <main
-      className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-3 md:p-4 text-white relative overflow-hidden"
+      className="min-h-screen flex flex-col items-center justify-between bg-gradient-to-br from-dark-900 via-dark-800 to-dark-950 p-3 md:p-4 text-white relative overflow-hidden"
       role="main"
       aria-label="Rock Paper Scissors Game"
     >
       {/* Ambient background elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.3),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,119,198,0.3),transparent_50%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(34,197,94,0.15),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(22,163,74,0.15),transparent_50%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-accent-500/5 to-transparent pointer-events-none" />
 
       {/* Info Button - Fixed in top right corner */}
       <InfoButton isOpen={isInfoOpen} onToggle={handleInfoToggle} />
