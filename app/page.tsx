@@ -24,7 +24,7 @@ const Home: FC = () => {
     handleDifficultyChange,
   } = useGameLogic();
 
-  const { adaptiveAI, isLoading } = useAdaptiveAI();
+  const { adaptiveAI } = useAdaptiveAI();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isAIInfoOpen, setIsAIInfoOpen] = useState(false);
 
@@ -73,7 +73,6 @@ const Home: FC = () => {
         adaptivePrediction={adaptivePrediction}
         onPlayerChoice={handlePlayerChoice}
         adaptiveAI={adaptiveAI}
-        isLoading={isLoading}
         onOpenInfoModal={handleAIInfoOpen}
       />
 

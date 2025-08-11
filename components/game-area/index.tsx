@@ -17,7 +17,6 @@ interface GameAreaProps {
   adaptivePrediction: AIConfidence | null;
   onPlayerChoice: (choice: Choice) => void;
   adaptiveAI: AdaptiveAI | null;
-  isLoading?: boolean;
   onOpenInfoModal: () => void;
 }
 
@@ -29,7 +28,6 @@ const GameArea: FC<GameAreaProps> = ({
   adaptivePrediction,
   onPlayerChoice,
   adaptiveAI,
-  isLoading = false,
   onOpenInfoModal,
 }) => {
   return (
@@ -42,7 +40,6 @@ const GameArea: FC<GameAreaProps> = ({
           result={result}
           adaptivePrediction={adaptivePrediction}
           adaptiveAI={adaptiveAI}
-          isLoading={isLoading}
           onOpenInfoModal={onOpenInfoModal}
         />
         <VSDivider />

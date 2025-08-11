@@ -21,11 +21,14 @@ export class AdaptiveAIDebugger {
       // Check if ml5 is available
       if (typeof window !== 'undefined') {
         console.log('🌐 Window object available:', !!window);
-        console.log('🧠 ML5 available:', !!window.ml5);
 
-        if (window.ml5) {
+        // Type assertion for window with ml5
+        const windowWithML5 = window as Window & { ml5?: unknown };
+        console.log('🧠 ML5 available:', !!windowWithML5.ml5);
+
+        if (windowWithML5.ml5) {
           console.log('✅ ML5 loaded successfully');
-          console.log('📊 ML5 version:', window.ml5);
+          console.log('📊 ML5 version:', windowWithML5.ml5);
         } else {
           console.log('❌ ML5 not loaded - this is the main issue!');
         }

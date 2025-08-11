@@ -26,11 +26,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js" async></script>
-      </head>
       <body className="antialiased">
-        <AdaptiveAIProvider>{children}</AdaptiveAIProvider>
+        <AdaptiveAIProvider>
+          {children}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                // Global error handler to prevent unhandled promise rejections
+                window.addEventListener('unhandledrejection', function(event) {
+                  console.warn('Unhandled promise rejection:', event.reason);
+                  event.preventDefault();
+                });
+                
+                // Global error handler for other errors
+                window.addEventListener('error', function(event) {
+                  console.warn('Global error caught:', event.error);
+                  event.preventDefault();
+                });
+              `,
+            }}
+          />
+        </AdaptiveAIProvider>
       </body>
     </html>
   );

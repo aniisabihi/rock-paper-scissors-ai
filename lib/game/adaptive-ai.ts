@@ -1,32 +1,35 @@
 import { Choice, Result } from './logic';
 
-// Declare ml5 globally to avoid TypeScript errors
-declare global {
-  interface Window {
-    ml5: {
-      neuralNetwork: (options: {
-        inputs: number;
-        outputs: number;
-        task: string;
-        debug: boolean;
-        learningRate: number;
-        hiddenUnits: number;
-      }) => ML5NeuralNetwork;
-      tf: {
-        ready: () => Promise<void>;
-        setBackend: (backend: string) => Promise<void>;
-      };
-    };
-  }
+// Type definitions for ml5 to avoid 'any' types
+interface ML5NeuralNetwork {
+  addData: (inputs: number[], outputs: number[]) => void;
+  train: (options: { epochs: number; batchSize: number }) => Promise<void>;
+  predict: (inputs: number[]) => Promise<Array<{ value: number }>>;
 }
 
-interface ML5NeuralNetwork {
-  data: {
-    addData: (inputs: number[], outputs: number[]) => void;
-    normalize: () => Promise<void>;
-  };
-  train: (options: { epochs: number; batchSize: number }, callback: () => void) => Promise<void>;
-  predict: (inputs: number[]) => Promise<Array<{ value: number }>>;
+interface ML5Module {
+  neuralNetwork: (options: {
+    task: 'regression' | 'classification';
+    debug: boolean;
+    layers: Array<{
+      type: string;
+      units: number;
+      activation: string;
+    }>;
+  }) => ML5NeuralNetwork;
+}
+
+// Alternative interface for when ml5 exports neuralNetwork as a top-level function
+interface ML5TopLevel {
+  neuralNetwork: (options: {
+    task: 'regression' | 'classification';
+    debug: boolean;
+    layers: Array<{
+      type: string;
+      units: number;
+      activation: string;
+    }>;
+  }) => ML5NeuralNetwork;
 }
 
 export interface GameEvent {
@@ -67,68 +70,429 @@ export class AdaptiveAI {
   private history: GameEvent[] = [];
   private neuralNetwork: ML5NeuralNetwork | null = null;
   private isTraining = false;
-  private features: number[] = [];
   private modelReady = false;
   private lastPrediction: AIConfidence | null = null;
+  private trainingData: Array<{ inputs: number[]; outputs: number[] }> = [];
+  private modelVersion = '1.0.0';
+  private ml5: ML5Module | ML5TopLevel | null = null; // Store ml5 instance
+
+  // Static instance to prevent multiple initializations
+  private static instance: AdaptiveAI | null = null;
+  private static isInitializing = false;
 
   constructor() {
-    // Don't initialize immediately - wait for ml5 to be available
-    this.waitForML5();
+    // Only initialize on client side
+    if (typeof window !== 'undefined') {
+      // Use a try-catch to prevent constructor errors from crashing the app
+      try {
+        this.initializeNeuralNetwork().catch((error) => {
+          console.error('❌ Neural network initialization failed in constructor:', error);
+          // Force fallback mode
+          this.forcePatternBasedMode();
+        });
+      } catch (error) {
+        console.error('❌ Constructor error during neural network initialization:', error);
+        // Force fallback mode
+        this.forcePatternBasedMode();
+      }
+    }
   }
 
-  private async waitForML5(): Promise<void> {
-    // Wait for ml5 to be available
-    let attempts = 0;
-    const maxAttempts = 50; // Wait up to 5 seconds
+  // Static method to get singleton instance
+  public static getInstance(): AdaptiveAI {
+    if (!AdaptiveAI.instance) {
+      AdaptiveAI.instance = new AdaptiveAI();
+    }
+    return AdaptiveAI.instance;
+  }
 
-    const checkML5 = async () => {
-      attempts++;
+  // Static method to reset singleton instance (useful for testing)
+  public static resetInstance(): void {
+    AdaptiveAI.instance = null;
+    AdaptiveAI.isInitializing = false;
+  }
 
-      if (typeof window !== 'undefined' && window.ml5) {
-        console.log('✅ ML5 detected, initializing TensorFlow.js and neural network...');
-        try {
-          // Initialize TensorFlow.js first
-          if (window.ml5.tf) {
-            await window.ml5.tf.ready();
-            console.log('✅ TensorFlow.js ready');
-          }
-          await this.initializeNeuralNetwork();
-        } catch (error) {
-          console.error('❌ Failed to initialize TensorFlow.js:', error);
-          this.modelReady = false;
-        }
-      } else if (attempts < maxAttempts) {
-        // Wait 100ms before next attempt
-        setTimeout(checkML5, 100);
-      } else {
-        console.warn('⚠️ ML5 not available after 5 seconds, adaptive AI will use fallback mode');
-        this.modelReady = false;
-      }
+  // Get current initialization status
+  public static getInitializationStatus(): {
+    hasInstance: boolean;
+    isInitializing: boolean;
+    hasGlobalML5: boolean;
+  } {
+    return {
+      hasInstance: !!AdaptiveAI.instance,
+      isInitializing: AdaptiveAI.isInitializing,
+      hasGlobalML5: AdaptiveAI.instance ? AdaptiveAI.instance.isML5GloballyAvailable() : false,
     };
+  }
 
-    checkML5();
+  // Check if neural network is properly built and ready
+  public isNeuralNetworkReady(): boolean {
+    if (!this.modelReady || !this.neuralNetwork) {
+      return false;
+    }
+
+    // Check if the neural network has the required methods
+    if (
+      typeof this.neuralNetwork.predict !== 'function' ||
+      typeof this.neuralNetwork.addData !== 'function' ||
+      typeof this.neuralNetwork.train !== 'function'
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Force fallback to pattern-based prediction
+  public forcePatternBasedMode(): void {
+    console.log('🧠 Forcing pattern-based prediction mode');
+    this.neuralNetwork = null;
+    this.modelReady = false;
+    this.isTraining = false;
+    this.ml5 = null; // Clear ml5 reference to prevent further attempts
+  }
+
+  // Check if we should attempt ml5 initialization
+  private shouldAttemptML5Initialization(): boolean {
+    // Don't attempt if we've already failed or if we're in fallback mode
+    if (this.ml5 === null) {
+      return false;
+    }
+
+    // Don't attempt if we're already in pattern-based mode
+    if (!this.modelReady && !this.neuralNetwork) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Safe method to get prediction that won't crash the app
+  public async safePredictNextMove(): Promise<AIConfidence> {
+    try {
+      return await this.predictNextMove();
+    } catch (error) {
+      console.error('❌ Prediction failed, using fallback:', error);
+      // Force fallback mode and return pattern-based prediction
+      this.forcePatternBasedMode();
+      return this.getPatternBasedPrediction();
+    }
+  }
+
+  // Get detailed debug information
+  public getDebugInfo(): {
+    hasML5: boolean;
+    hasNeuralNetwork: boolean;
+    modelReady: boolean;
+    isTraining: boolean;
+    neuralNetworkMethods: string[];
+    ml5Methods: string[];
+    historyLength: number;
+    trainingDataLength: number;
+  } {
+    const neuralNetworkMethods = this.neuralNetwork
+      ? Object.getOwnPropertyNames(Object.getPrototypeOf(this.neuralNetwork)).filter(
+          (name) => typeof (this.neuralNetwork as ML5NeuralNetwork)[name as keyof ML5NeuralNetwork] === 'function'
+        )
+      : [];
+
+    const ml5Methods = this.ml5
+      ? Object.getOwnPropertyNames(Object.getPrototypeOf(this.ml5)).filter(
+          (name) => typeof (this.ml5 as ML5Module)[name as keyof ML5Module] === 'function'
+        )
+      : [];
+
+    return {
+      hasML5: !!this.ml5,
+      hasNeuralNetwork: !!this.neuralNetwork,
+      modelReady: this.modelReady,
+      isTraining: this.isTraining,
+      neuralNetworkMethods,
+      ml5Methods,
+      historyLength: this.history.length,
+      trainingDataLength: this.trainingData.length,
+    };
+  }
+
+  // Method to ensure ml5 is initialized when needed
+  private async ensureML5Initialized(): Promise<boolean> {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    if (this.ml5) {
+      return true;
+    }
+
+    try {
+      await this.initializeNeuralNetwork();
+      return this.ml5 !== null;
+    } catch (error) {
+      console.error('Failed to initialize ml5:', error);
+      // Fallback to pattern-based mode
+      this.forcePatternBasedMode();
+      return false;
+    }
+  }
+
+  // Check if ml5 is already available globally
+  private isML5GloballyAvailable(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      const windowWithML5 = window as Window & { ml5?: ML5Module | ML5TopLevel };
+      return !!(windowWithML5.ml5 && typeof windowWithML5.ml5.neuralNetwork === 'function');
+    } catch (error) {
+      console.warn('Error checking global ml5 availability:', error);
+      return false;
+    }
+  }
+
+  // Get global ml5 instance if available
+  private getGlobalML5(): ML5Module | ML5TopLevel | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const windowWithML5 = window as Window & { ml5?: ML5Module | ML5TopLevel };
+      return windowWithML5.ml5 && typeof windowWithML5.ml5.neuralNetwork === 'function' ? windowWithML5.ml5 : null;
+    } catch (error) {
+      console.warn('Error getting global ml5 instance:', error);
+      return null;
+    }
+  }
+
+  // Check ml5.js version and compatibility
+  private checkML5Compatibility(): void {
+    if (!this.ml5) return;
+
+    try {
+      // Try to access ml5 version info if available
+      const ml5WithVersion = this.ml5 as ML5Module & { version?: string };
+      if (ml5WithVersion.version) {
+        console.log('🧠 ml5.js version:', ml5WithVersion.version);
+      }
+
+      // Check if neuralNetwork method exists
+      if (typeof this.ml5.neuralNetwork === 'function') {
+        console.log('🧠 ml5.js neuralNetwork method available');
+      } else {
+        console.warn('⚠️ ml5.js neuralNetwork method not available');
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not check ml5.js compatibility:', error);
+    }
   }
 
   private async initializeNeuralNetwork(): Promise<void> {
-    try {
-      if (typeof window !== 'undefined' && window.ml5) {
-        // Neural network configuration
-        const options = {
-          inputs: 15, // Feature vector size
-          outputs: 3, // Rock, Paper, Scissors probabilities
-          task: 'classification',
-          debug: false,
-          learningRate: 0.2,
-          hiddenUnits: 10,
-        };
+    // Prevent multiple simultaneous initializations
+    if (AdaptiveAI.isInitializing) {
+      console.log('🧠 Neural network initialization already in progress, waiting...');
+      // Wait for existing initialization to complete
+      while (AdaptiveAI.isInitializing) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      return;
+    }
 
-        this.neuralNetwork = window.ml5.neuralNetwork(options);
+    try {
+      AdaptiveAI.isInitializing = true;
+      console.log('🧠 Starting neural network initialization...');
+
+      // Check if ml5 is already available globally (prevent multiple imports)
+      if (typeof window !== 'undefined' && !this.ml5) {
+        // Check if ml5 is already loaded globally
+        if (this.isML5GloballyAvailable()) {
+          console.log('🧠 Using globally available ml5 instance (prevents TensorFlow.js warnings)');
+          this.ml5 = this.getGlobalML5();
+        } else {
+          // Only import if not already available
+          console.log('🧠 Importing ml5 module (first time only)...');
+          try {
+            const ml5Module = await import('ml5');
+            console.log('🧠 ml5 module imported:', ml5Module);
+
+            // ml5 0.12.2 exports neuralNetwork as a top-level function
+            if (ml5Module && typeof ml5Module.neuralNetwork === 'function') {
+              this.ml5 = ml5Module as ML5TopLevel;
+              console.log('✅ Using top-level neuralNetwork export');
+            } else if (ml5Module.default && typeof ml5Module.default.neuralNetwork === 'function') {
+              this.ml5 = ml5Module.default as ML5Module;
+              console.log('✅ Using default export neuralNetwork');
+            } else {
+              // Based on debug output, neuralNetwork should be available directly
+              console.error('❌ neuralNetwork not found in expected locations');
+              console.log('🔍 ml5Module structure:', ml5Module);
+              throw new Error('Could not find neuralNetwork function in ml5 module');
+            }
+
+            // Store globally to prevent multiple imports
+            (window as Window & { ml5?: ML5Module | ML5TopLevel }).ml5 = this.ml5 || undefined;
+            console.log('🧠 ml5 stored globally to prevent duplicate imports');
+          } catch (importError) {
+            console.error('❌ Failed to import ml5 module:', importError);
+            throw new Error(`ml5 import failed: ${importError}`);
+          }
+        }
+      } else if (this.ml5) {
+        console.log('🧠 Using existing ml5 instance');
+      }
+
+      if (!this.ml5) {
+        console.warn('⚠️ ml5 not available, falling back to pattern-based prediction');
+        this.modelReady = false;
+        return;
+      }
+
+      // Verify ml5 has the required neuralNetwork method
+      if (typeof this.ml5.neuralNetwork !== 'function') {
+        console.error('❌ ml5.neuralNetwork is not a function:', this.ml5);
+        throw new Error('ml5.neuralNetwork method not available');
+      }
+
+      // Check ml5.js compatibility
+      this.checkML5Compatibility();
+
+      // Ensure TensorFlow.js is ready before creating neural network
+      console.log('🧠 Ensuring TensorFlow.js is ready...');
+      if (typeof window !== 'undefined') {
+        const windowWithTF = window as Window & { tf?: { version: string } };
+        if (windowWithTF.tf) {
+          console.log('✅ TensorFlow.js found on window, version:', windowWithTF.tf.version);
+        } else {
+          console.log('⚠️ TensorFlow.js not found on window, waiting for ml5 to initialize it...');
+          // Give ml5 time to initialize TensorFlow.js
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // Check if TensorFlow.js is now available
+          const tfAfterWait = (window as Window & { tf?: { version: string } }).tf;
+          if (tfAfterWait) {
+            console.log('✅ TensorFlow.js now available on window, version:', tfAfterWait.version);
+          } else {
+            console.log('⚠️ TensorFlow.js still not on window, trying to expose it from ml5...');
+            // Try to expose TensorFlow.js from ml5 to window
+            if (this.ml5 && (this.ml5 as ML5Module & { tf?: { version: string } }).tf) {
+              (window as Window & { tf?: { version: string } }).tf = (
+                this.ml5 as ML5Module & { tf?: { version: string } }
+              ).tf;
+              console.log('✅ TensorFlow.js exposed to window from ml5');
+            }
+          }
+        }
+      }
+
+      // Create neural network with ml5.js
+      console.log('🧠 Creating neural network...');
+
+      try {
+        // Wrap the neural network creation in a try-catch to handle function call errors
+        let neuralNetworkInstance: ML5NeuralNetwork | null = null;
+
+        try {
+          console.log('🧠 Attempting to create neural network with ml5...');
+          neuralNetworkInstance = this.ml5.neuralNetwork({
+            task: 'regression',
+            debug: true, // Enable debug to see what's happening
+            layers: [
+              {
+                type: 'dense',
+                units: 32,
+                activation: 'relu',
+              },
+              {
+                type: 'dense',
+                units: 16,
+                activation: 'relu',
+              },
+              {
+                type: 'dense',
+                units: 3,
+                activation: 'softmax',
+              },
+            ],
+          });
+          console.log('🧠 Neural network creation call completed');
+        } catch (creationError) {
+          console.error('❌ Neural network creation failed:', creationError);
+          console.log('🧠 This is likely a ml5 internal error, falling back to pattern-based prediction');
+          throw new Error(`Neural network creation failed: ${creationError}`);
+        }
+
+        if (!neuralNetworkInstance) {
+          throw new Error('Neural network creation failed - null returned');
+        }
+
+        this.neuralNetwork = neuralNetworkInstance;
+
+        // Verify the neural network was created properly
+        if (!this.neuralNetwork) {
+          throw new Error('Neural network creation failed - null returned');
+        }
+
+        // Test if the neural network is properly initialized by checking its methods
+        if (typeof this.neuralNetwork.addData !== 'function' || typeof this.neuralNetwork.predict !== 'function') {
+          throw new Error('Neural network methods not available - improper initialization');
+        }
+
+        console.log('🧠 Neural network created successfully, verifying initialization...');
+
+        // Add some dummy data to ensure the model is built
+        console.log('🧠 Adding initial training data to build the model...');
+        try {
+          this.neuralNetwork.addData([0, 0, 0, 0, 0, 0, 0, 0, 0], [0.33, 0.33, 0.34]);
+        } catch (addDataError) {
+          console.error('❌ Failed to add initial training data:', addDataError);
+          throw new Error(`Failed to add training data: ${addDataError}`);
+        }
+
+        // Train for a few epochs to build the model
+        console.log('🧠 Training model for initial build...');
+        try {
+          await this.neuralNetwork.train({
+            epochs: 1,
+            batchSize: 1,
+          });
+        } catch (trainingError) {
+          console.error('❌ Initial training failed:', trainingError);
+          throw new Error(`Initial training failed: ${trainingError}`);
+        }
+
+        // Test the neural network to ensure it's working
+        console.log('🧠 Testing neural network with sample prediction...');
+        try {
+          const testFeatures = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+          const testResult = await this.neuralNetwork.predict(testFeatures);
+          console.log('🧠 Test prediction successful:', testResult);
+        } catch (testError) {
+          console.warn('⚠️ Test prediction failed, but continuing:', testError);
+        }
+
         this.modelReady = true;
-        console.log('✅ Neural network initialized successfully');
+        console.log('✅ Neural network initialized and built successfully');
+      } catch (neuralNetworkError) {
+        console.error('❌ Neural network creation/training failed:', neuralNetworkError);
+
+        // Check if this is the specific ml5 internal error
+        if (neuralNetworkError instanceof Error && neuralNetworkError.message.includes('e is not a function')) {
+          console.log('🧠 Detected ml5 internal error "e is not a function"');
+          console.log('🧠 This is a known compatibility issue with ml5 0.12.2 + TensorFlow.js 1.7.4');
+          console.log('🧠 Falling back to enhanced pattern-based prediction mode');
+        } else {
+          console.log('🧠 Neural network failed for other reasons, falling back to pattern-based prediction');
+        }
+
+        this.neuralNetwork = null;
+        this.modelReady = false;
+
+        // Don't throw the error, just log it and continue without neural network
+        // This allows the AI to work with pattern-based prediction
+        return;
+      } finally {
+        AdaptiveAI.isInitializing = false;
       }
     } catch (error) {
-      console.error('Failed to initialize neural network:', error);
+      console.error('❌ Neural network initialization failed:', error);
+      this.neuralNetwork = null;
       this.modelReady = false;
+      AdaptiveAI.isInitializing = false;
+      throw error;
     }
   }
 
@@ -143,22 +507,27 @@ export class AdaptiveAI {
 
     this.history.push(gameEvent);
 
+    // Prepare training data for this game
+    if (this.history.length >= 2) {
+      this.prepareTrainingData();
+    }
+
     // Trigger incremental learning after sufficient data
-    if (this.history.length >= 3 && this.modelReady) {
+    if (this.history.length >= 5 && this.modelReady && !this.isTraining) {
       this.performIncrementalLearning();
     }
   }
 
   private extractFeatures(): number[] {
     if (this.history.length === 0) {
-      return new Array(15).fill(0);
+      return new Array(20).fill(0);
     }
 
     const patterns = this.analyzePlayerPatterns();
-    // Extract recent games for analysis (currently unused but available for future features)
     const lastGame = this.history[this.history.length - 1];
+    const recentGames = this.history.slice(-5);
 
-    // Create feature vector
+    // Enhanced feature vector with 20 features
     const features = [
       // Choice frequencies (normalized)
       patterns.choiceFrequency.rock / this.history.length,
@@ -179,13 +548,23 @@ export class AdaptiveAI {
       patterns.streakBehavior.tendencyToSwitch,
       patterns.streakBehavior.tendencyToRepeat,
 
-      // Recent game bias
+      // Recent game bias (last 5 games)
       patterns.timePatterns.recentBias.rock,
       patterns.timePatterns.recentBias.paper,
       patterns.timePatterns.recentBias.scissors,
 
+      // Win/loss ratio
+      this.history.filter((g) => g.result === 'win').length / this.history.length,
+      this.history.filter((g) => g.result === 'lose').length / this.history.length,
+      this.history.filter((g) => g.result === 'draw').length / this.history.length,
+
+      // Recent choice bias (last 3 games)
+      recentGames.filter((g) => g.playerChoice === 'rock').length / Math.min(recentGames.length, 3),
+      recentGames.filter((g) => g.playerChoice === 'paper').length / Math.min(recentGames.length, 3),
+      recentGames.filter((g) => g.playerChoice === 'scissors').length / Math.min(recentGames.length, 3),
+
       // Game count (normalized)
-      Math.min(this.history.length / 20, 1), // Cap at 20 games
+      Math.min(this.history.length / 30, 1), // Cap at 30 games
     ];
 
     return features;
@@ -277,7 +656,7 @@ export class AdaptiveAI {
   private getTransitionProbability(fromChoice: Choice, toChoice: Choice): number {
     const transitions = this.analyzePlayerPatterns().transitionMatrix[fromChoice];
     const total = Object.values(transitions).reduce((sum, count) => sum + count, 0);
-    return total > 0 ? transitions[toChoice] / total : 0.33; // Default to equal probability
+    return total > 0 ? transitions[toChoice] / total : 0.33;
   }
 
   private getReactionTendency(result: Result, choice: Choice): number {
@@ -299,52 +678,14 @@ export class AdaptiveAI {
     return total > 0 ? targetReactions[choice] / total : 0.33;
   }
 
-  private async performIncrementalLearning(): Promise<void> {
-    if (!this.modelReady || this.isTraining || this.history.length < 3) {
-      return;
-    }
+  private prepareTrainingData(): void {
+    if (this.history.length < 2) return;
 
-    this.isTraining = true;
-
-    try {
-      // Prepare training data from recent history
-      const trainingData = this.prepareTrainingData();
-
-      if (trainingData.length > 0 && this.neuralNetwork) {
-        console.log('🧠 Starting incremental learning with', trainingData.length, 'training samples');
-
-        // For now, skip training until we fix the API issues
-        // The pattern-based prediction will still work
-        console.log('⚠️ Training temporarily disabled - using pattern-based prediction');
-        this.isTraining = false;
-        return;
-
-        // TODO: Fix ML5.js API usage
-        // trainingData.forEach((data) => {
-        //   this.neuralNetwork!.data.addData(data.inputs, data.outputs);
-        // });
-        // await this.neuralNetwork.data.normalize();
-        // await this.neuralNetwork.train(
-        //   { epochs: 10, batchSize: Math.min(trainingData.length, 4) },
-        //   () => { this.isTraining = false; }
-        // );
-      }
-    } catch (error) {
-      console.error('❌ Training error:', error);
-      this.isTraining = false;
-
-      // If training fails, fall back to pattern-based mode
-      console.warn('⚠️ Falling back to pattern-based prediction due to training failure');
-    }
-  }
-
-  private prepareTrainingData(): Array<{ inputs: number[]; outputs: number[] }> {
-    if (this.history.length < 2) return [];
-
-    const trainingData: Array<{ inputs: number[]; outputs: number[] }> = [];
+    // Clear old training data
+    this.trainingData = [];
 
     // Use sliding window approach for the last few games
-    const windowSize = Math.min(this.history.length - 1, 5);
+    const windowSize = Math.min(this.history.length - 1, 10);
     for (let i = this.history.length - windowSize; i < this.history.length - 1; i++) {
       const currentHistory = this.history.slice(0, i + 1);
       const features = this.extractFeaturesFromHistory(currentHistory);
@@ -355,51 +696,91 @@ export class AdaptiveAI {
       const choiceIndex = ['rock', 'paper', 'scissors'].indexOf(nextChoice);
       outputs[choiceIndex] = 1;
 
-      trainingData.push({
+      this.trainingData.push({
         inputs: features,
         outputs,
       });
     }
-
-    return trainingData;
   }
 
   private extractFeaturesFromHistory(historySubset: GameEvent[]): number[] {
-    // Similar to extractFeatures but for a specific history subset
     if (historySubset.length === 0) {
-      return new Array(15).fill(0);
+      return new Array(20).fill(0);
     }
 
-    // Simplified feature extraction for training data
-    const choiceCount = { rock: 0, paper: 0, scissors: 0 };
-    historySubset.forEach((game) => {
-      choiceCount[game.playerChoice]++;
-    });
+    // Create a temporary AI instance to analyze this subset
+    const tempAI = new AdaptiveAI();
+    tempAI.history = historySubset;
 
-    const total = historySubset.length;
-    const features = [choiceCount.rock / total, choiceCount.paper / total, choiceCount.scissors / total];
+    try {
+      return tempAI.extractFeatures();
+    } catch {
+      // Fallback to basic features
+      const choiceCount = { rock: 0, paper: 0, scissors: 0 };
+      historySubset.forEach((game) => {
+        choiceCount[game.playerChoice]++;
+      });
 
-    // Pad with additional features
-    while (features.length < 15) {
-      features.push(0);
+      const total = historySubset.length;
+      const features = [
+        choiceCount.rock / total,
+        choiceCount.paper / total,
+        choiceCount.scissors / total,
+        ...new Array(17).fill(0),
+      ];
+
+      return features;
+    }
+  }
+
+  private async performIncrementalLearning(): Promise<void> {
+    if (!this.modelReady || this.isTraining || this.trainingData.length === 0) {
+      return;
     }
 
-    return features;
+    // Additional safety check for neural network
+    if (
+      !this.neuralNetwork ||
+      typeof this.neuralNetwork.addData !== 'function' ||
+      typeof this.neuralNetwork.train !== 'function'
+    ) {
+      console.warn('⚠️ Neural network not properly initialized for training, skipping incremental learning');
+      return;
+    }
+
+    this.isTraining = true;
+    console.log('🧠 Starting incremental learning with', this.trainingData.length, 'training samples');
+
+    try {
+      // Add training data
+      this.trainingData.forEach((data) => {
+        this.neuralNetwork!.addData(data.inputs, data.outputs);
+      });
+
+      // Train the model
+      await this.neuralNetwork!.train({
+        epochs: 50,
+        batchSize: Math.min(this.trainingData.length, 8),
+      });
+
+      console.log('✅ Training completed successfully');
+    } catch (error) {
+      console.error('❌ Training error:', error);
+      console.warn('⚠️ Falling back to pattern-based prediction due to training failure');
+    } finally {
+      this.isTraining = false;
+    }
   }
 
   public async predictNextMove(): Promise<AIConfidence> {
-    // For now, always use pattern-based prediction until we fix ML5.js issues
-    // This ensures the AI still learns and adapts to player patterns
-    return this.getPatternBasedPrediction();
-
-    // TODO: Re-enable neural network prediction once ML5.js API is fixed
-    /*
-    if (!this.modelReady) {
+    if (!this.isNeuralNetworkReady() || this.isTraining) {
+      console.log('🧠 Neural network not ready, using pattern-based prediction');
       // Fallback to pattern-based prediction when neural network isn't ready
       return this.getPatternBasedPrediction();
     }
-    
+
     if (this.history.length === 0) {
+      console.log('🧠 No game history, using random prediction');
       // Fallback to random prediction
       return {
         rockProbability: 0.33,
@@ -411,23 +792,32 @@ export class AdaptiveAI {
     }
 
     try {
-      const features = this.extractFeatures();
-
-      if (!this.neuralNetwork) {
-        throw new Error('Neural network not initialized');
+      // Additional safety check for neural network
+      if (!this.neuralNetwork || typeof this.neuralNetwork.predict !== 'function') {
+        console.warn('⚠️ Neural network not properly initialized, falling back to pattern-based prediction');
+        return this.getPatternBasedPrediction();
       }
 
+      const features = this.extractFeatures();
+      console.log('🧠 Extracted features for prediction:', features);
+
+      console.log('🧠 Using neural network for prediction...');
+      // Use the trained model to predict
       const results = await this.neuralNetwork.predict(features);
+      console.log('🧠 Neural network prediction results:', results);
 
       let probabilities = [0.33, 0.33, 0.34]; // Default
       if (results && results.length >= 3) {
         probabilities = [results[0].value, results[1].value, results[2].value];
       }
 
-      // Ensure probabilities sum to 1
+      // Ensure probabilities sum to 1 and are non-negative
+      probabilities = probabilities.map((p) => Math.max(0, p));
       const sum = probabilities.reduce((acc, val) => acc + val, 0);
       if (sum > 0) {
         probabilities = probabilities.map((p) => p / sum);
+      } else {
+        probabilities = [0.33, 0.33, 0.34];
       }
 
       const confidence = Math.max(...probabilities) - 0.33; // Above random chance
@@ -441,18 +831,14 @@ export class AdaptiveAI {
         reasoning,
       };
 
+      console.log('🧠 Prediction completed successfully:', this.lastPrediction);
       return this.lastPrediction;
     } catch (error) {
-      console.error('Prediction error:', error);
-      return {
-        rockProbability: 0.33,
-        paperProbability: 0.33,
-        scissorsProbability: 0.34,
-        confidence: 0.1,
-        reasoning: ['Prediction error occurred', 'Using fallback random prediction'],
-      };
+      console.error('❌ Prediction error:', error);
+      console.log('🧠 Falling back to pattern-based prediction due to error');
+      // Fallback to pattern-based prediction
+      return this.getPatternBasedPrediction();
     }
-    */
   }
 
   private generateReasoning(): string[] {
@@ -493,6 +879,13 @@ export class AdaptiveAI {
     )[0] as Choice;
     reasoning.push(`Recent games show bias toward ${recentFavorite}`);
 
+    // Add ML-specific reasoning if available
+    if (this.modelReady && !this.isTraining) {
+      reasoning.push('Using neural network predictions');
+    } else {
+      reasoning.push('Using enhanced pattern analysis');
+    }
+
     return reasoning;
   }
 
@@ -505,12 +898,14 @@ export class AdaptiveAI {
     modelReady: boolean;
     isTraining: boolean;
     ml5Available: boolean;
+    trainingDataSize: number;
   } {
     return {
       gamesPlayed: this.history.length,
-      modelReady: this.modelReady,
+      modelReady: this.isNeuralNetworkReady(),
       isTraining: this.isTraining,
-      ml5Available: typeof window !== 'undefined' && !!window.ml5,
+      ml5Available: typeof this.ml5 !== 'undefined',
+      trainingDataSize: this.trainingData.length,
     };
   }
 
@@ -518,14 +913,14 @@ export class AdaptiveAI {
     isWorking: boolean;
     status: string;
     details: string[];
-    mode: 'Neural Network' | 'Enhanced Pattern' | 'Basic Pattern' | 'Limited';
+    mode: 'Neural Network' | 'Enhanced Pattern' | 'Basic Pattern' | 'Learning' | 'Limited';
     confidence: number;
     capabilities: string[];
   } {
     const progress = this.getTrainingProgress();
     const details: string[] = [];
     const capabilities: string[] = [];
-    let mode: 'Neural Network' | 'Enhanced Pattern' | 'Basic Pattern' | 'Learning' | 'Limited';
+    let mode = 'Limited' as 'Neural Network' | 'Enhanced Pattern' | 'Basic Pattern' | 'Learning' | 'Limited';
     let confidence = 0;
 
     // Check ML5 availability
@@ -539,9 +934,6 @@ export class AdaptiveAI {
     // Check neural network status
     if (!progress.modelReady) {
       details.push('Neural network not initialized');
-      if (progress.ml5Available) {
-        details.push('TensorFlow.js initialization pending');
-      }
     } else {
       capabilities.push('Neural network ready');
     }
@@ -549,7 +941,7 @@ export class AdaptiveAI {
     // Check training status
     if (progress.isTraining) {
       details.push('Currently training neural network');
-      mode = 'Limited'; // Set to limited while training
+      mode = 'Learning';
     }
 
     // Determine operational mode and confidence based on available data
@@ -557,8 +949,8 @@ export class AdaptiveAI {
       details.push('Need at least 3 games for learning');
       mode = 'Limited';
       confidence = 0;
-    } else if (progress.modelReady && !progress.isTraining) {
-      // Neural network is ready and not training
+    } else if (progress.modelReady && !progress.isTraining && progress.trainingDataSize > 0) {
+      // Neural network is ready and has training data
       mode = 'Neural Network';
       confidence = Math.min(0.9, 0.3 + progress.gamesPlayed * 0.1);
       capabilities.push('Deep learning predictions');
@@ -612,9 +1004,10 @@ export class AdaptiveAI {
       case 'Basic Pattern':
         status = `Learning (${Math.round(confidence * 100)}% confidence)`;
         break;
+
       case 'Limited':
       default:
-        status = progress.isTraining ? 'Training Neural Network...' : 'Limited functionality';
+        status = 'Limited functionality';
         break;
     }
 
@@ -740,9 +1133,9 @@ export class AdaptiveAI {
   public reset(): void {
     this.history = [];
     this.lastPrediction = null;
-    if (this.neuralNetwork) {
-      this.initializeNeuralNetwork();
-    }
+    this.trainingData = [];
+    this.isTraining = false;
+    this.initializeNeuralNetwork();
   }
 
   public getPerformanceMetrics(): {
@@ -788,7 +1181,7 @@ export class AdaptiveAI {
     if (totalGames >= 3) {
       const patterns = this.analyzePlayerPatterns();
       const patternQuality = this.assessPatternQuality(patterns);
-      learningProgress = Math.min(1, (totalGames / 20) * 0.6 + patternQuality * 0.4);
+      learningProgress = Math.min(1, (totalGames / 30) * 0.6 + patternQuality * 0.4);
     }
 
     // Get pattern strength
@@ -1036,5 +1429,15 @@ export class AdaptiveAI {
     // Calculate how well the AI performed in these games
     const wins = games.filter((g) => g.result === 'win').length;
     return wins / games.length;
+  }
+
+  // Add method to access history for testing
+  public getHistory(): GameEvent[] {
+    return [...this.history];
+  }
+
+  // Add method to set history for testing
+  public setHistory(history: GameEvent[]): void {
+    this.history = [...history];
   }
 }

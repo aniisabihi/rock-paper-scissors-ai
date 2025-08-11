@@ -15,7 +15,6 @@ interface AISectionProps {
   result: Result | null;
   adaptivePrediction: AIConfidence | null;
   adaptiveAI: AdaptiveAI | null;
-  isLoading?: boolean;
   onOpenInfoModal: () => void;
 }
 
@@ -26,7 +25,6 @@ const AISection: FC<AISectionProps> = ({
   result,
   adaptivePrediction,
   adaptiveAI,
-  isLoading = false,
   onOpenInfoModal,
 }) => {
   const getAiMood = (): 'idle' | 'win' | 'lose' | 'draw' => {

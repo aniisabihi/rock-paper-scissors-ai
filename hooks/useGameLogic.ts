@@ -49,14 +49,22 @@ export const useGameLogic = () => {
         recordPlayerChoice(choice);
       } else if (currentMode === 'adaptive' && adaptiveAI) {
         try {
-          // Get AI prediction before the player's move is recorded
-          const prediction = await adaptiveAI.predictNextMove();
-          setAdaptivePrediction(prediction);
-          console.log('🤖 Adaptive AI prediction:', prediction);
+          // Verify the AI is ready before using it
+          if (typeof adaptiveAI.predictNextMove === 'function') {
+            // Use the safe prediction method that won't crash the app
+            const prediction = await adaptiveAI.safePredictNextMove();
+            setAdaptivePrediction(prediction);
+            console.log('🤖 Adaptive AI prediction:', prediction);
+          } else {
+            console.warn('⚠️ Adaptive AI not properly initialized, falling back to pattern prediction');
+            setAiPrediction(predictNextMove());
+            recordPlayerChoice(choice);
+          }
         } catch (error) {
           console.error('❌ Adaptive AI prediction failed:', error);
           // Fallback to pattern prediction
           setAiPrediction(predictNextMove());
+          recordPlayerChoice(choice);
         }
       } else if (currentMode === 'adaptive' && !adaptiveAI) {
         // Adaptive AI not ready yet, fallback to pattern
@@ -76,10 +84,18 @@ export const useGameLogic = () => {
           // Record the game for adaptive learning
           if (currentMode === 'adaptive' && adaptiveAI) {
             try {
-              adaptiveAI.recordGame(choice, ai, gameResult);
-              console.log('📝 Game recorded for adaptive learning');
+              // Verify the AI has the recordGame method before using it
+              if (typeof adaptiveAI.recordGame === 'function') {
+                adaptiveAI.recordGame(choice, ai, gameResult);
+                console.log('📝 Game recorded for adaptive learning');
+              } else {
+                console.warn('⚠️ Adaptive AI recordGame method not available, recording for pattern mode');
+                recordPlayerChoice(choice);
+              }
             } catch (error) {
               console.error('❌ Failed to record game for adaptive learning:', error);
+              // Fallback to pattern recording
+              recordPlayerChoice(choice);
             }
           } else if (currentMode === 'pattern') {
             // Already recorded above for pattern mode
