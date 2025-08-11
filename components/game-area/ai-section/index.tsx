@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import AiAvatar from '@/components/game-area/ai-section/AiAvatar';
 import AIThoughtBubble from '@/components/game-area/ai-section/ai-thought-bubble';
 import type { Choice, Result } from '@/lib/game/logic';
-import type { AIConfidence } from '@/lib/game/adaptive-ai';
+import type { AIConfidence, AdaptiveAI } from '@/lib/game/adaptive-ai';
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
@@ -14,8 +14,9 @@ interface AISectionProps {
   isThinking: boolean;
   result: Result | null;
   adaptivePrediction: AIConfidence | null;
-  adaptiveAI: { getTrainingProgress: () => { gamesPlayed: number } } | null;
+  adaptiveAI: AdaptiveAI | null;
   isLoading?: boolean;
+  onOpenInfoModal: () => void;
 }
 
 const AISection: FC<AISectionProps> = ({
@@ -26,6 +27,7 @@ const AISection: FC<AISectionProps> = ({
   adaptivePrediction,
   adaptiveAI,
   isLoading = false,
+  onOpenInfoModal,
 }) => {
   const getAiMood = (): 'idle' | 'win' | 'lose' | 'draw' => {
     if (isThinking || !result) return 'idle';
@@ -56,6 +58,7 @@ const AISection: FC<AISectionProps> = ({
           isThinking={isThinking}
           adaptiveAI={adaptiveAI}
           isLoading={isLoading}
+          onOpenInfoModal={onOpenInfoModal}
         />
 
         {/* Pattern Recognition Prediction */}

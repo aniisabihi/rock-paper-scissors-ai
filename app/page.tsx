@@ -7,6 +7,7 @@ import GameArea from '@/components/game-area';
 import GameResults from '@/components/game-results';
 import InfoButton from '@/components/game-header/InfoButton';
 import InfoModal from '@/components/game-header/InfoModal';
+import AIInfoModal from '@/components/game-area/ai-section/ai-thought-bubble/AIInfoModal';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import { useAdaptiveAI } from '@/lib/context/adaptive-ai-context';
 
@@ -25,6 +26,7 @@ const Home: FC = () => {
 
   const { adaptiveAI, isLoading } = useAdaptiveAI();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isAIInfoOpen, setIsAIInfoOpen] = useState(false);
 
   const handleInfoToggle = () => {
     setIsInfoOpen(!isInfoOpen);
@@ -32,6 +34,14 @@ const Home: FC = () => {
 
   const handleInfoClose = () => {
     setIsInfoOpen(false);
+  };
+
+  const handleAIInfoOpen = () => {
+    setIsAIInfoOpen(true);
+  };
+
+  const handleAIInfoClose = () => {
+    setIsAIInfoOpen(false);
   };
 
   return (
@@ -48,6 +58,9 @@ const Home: FC = () => {
       <InfoButton isOpen={isInfoOpen} onToggle={handleInfoToggle} />
       <InfoModal isOpen={isInfoOpen} onClose={handleInfoClose} />
 
+      {/* AI Info Modal - Rendered at top level */}
+      <AIInfoModal isOpen={isAIInfoOpen} onClose={handleAIInfoClose} adaptiveAI={adaptiveAI} />
+
       {/* Game Header */}
       <GameHeader difficulty={difficulty} onDifficultyChange={handleDifficultyChange} adaptiveAI={adaptiveAI} />
 
@@ -61,6 +74,7 @@ const Home: FC = () => {
         onPlayerChoice={handlePlayerChoice}
         adaptiveAI={adaptiveAI}
         isLoading={isLoading}
+        onOpenInfoModal={handleAIInfoOpen}
       />
 
       {/* Game Results */}

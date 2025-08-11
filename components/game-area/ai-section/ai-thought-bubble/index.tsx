@@ -5,17 +5,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BubbleHeader from './BubbleHeader';
 import PredictionBars from './PredictionBars';
 import TopPrediction from './TopPrediction';
-import type { AIConfidence } from '@/lib/game/adaptive-ai';
+import type { AIConfidence, AdaptiveAI } from '@/lib/game/adaptive-ai';
 
 interface AIThoughtBubbleProps {
   prediction: AIConfidence | null;
   isVisible: boolean;
   isThinking: boolean;
-  adaptiveAI: { getTrainingProgress: () => { gamesPlayed: number } } | null;
+  adaptiveAI: AdaptiveAI | null;
   isLoading?: boolean;
+  onOpenInfoModal: () => void;
 }
 
-const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible, adaptiveAI, isLoading = false }) => {
+const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({
+  prediction,
+  isVisible,
+  adaptiveAI,
+  isLoading = false,
+  onOpenInfoModal,
+}) => {
   if (!isVisible || !prediction) return null;
 
   return (
@@ -26,7 +33,12 @@ const AIThoughtBubble: FC<AIThoughtBubbleProps> = ({ prediction, isVisible, adap
         exit={{ opacity: 0, scale: 0.8, y: 10 }}
         className="absolute top-[-220px] left-1/2 transform -translate-x-1/2 bg-dark-800/90 backdrop-blur-md rounded-2xl p-2 shadow-2xl border-2 border-accent-400/30 min-w-[200px] max-w-[300px] z-30"
       >
-        <BubbleHeader prediction={prediction} adaptiveAI={adaptiveAI} isLoading={isLoading} />
+        <BubbleHeader
+          prediction={prediction}
+          adaptiveAI={adaptiveAI}
+          isLoading={isLoading}
+          onOpenInfoModal={onOpenInfoModal}
+        />
         {/* <PredictionBars prediction={prediction} /> */}
         <TopPrediction prediction={prediction} />
       </motion.div>

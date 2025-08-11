@@ -514,35 +514,118 @@ export class AdaptiveAI {
     };
   }
 
-  public getStatus(): { isWorking: boolean; status: string; details: string[] } {
+  public getStatus(): {
+    isWorking: boolean;
+    status: string;
+    details: string[];
+    mode: 'Neural Network' | 'Enhanced Pattern' | 'Basic Pattern' | 'Limited';
+    confidence: number;
+    capabilities: string[];
+  } {
     const progress = this.getTrainingProgress();
     const details: string[] = [];
+    const capabilities: string[] = [];
+    let mode: 'Neural Network' | 'Enhanced Pattern' | 'Basic Pattern' | 'Learning' | 'Limited';
+    let confidence = 0;
 
+    // Check ML5 availability
     if (!progress.ml5Available) {
       details.push('ML5.js library not loaded');
+      mode = 'Limited';
+    } else {
+      capabilities.push('ML5.js available');
     }
 
+    // Check neural network status
     if (!progress.modelReady) {
       details.push('Neural network not initialized');
+      if (progress.ml5Available) {
+        details.push('TensorFlow.js initialization pending');
+      }
+    } else {
+      capabilities.push('Neural network ready');
     }
 
-    if (progress.gamesPlayed < 3) {
-      details.push('Need at least 3 games for learning');
-    }
-
+    // Check training status
     if (progress.isTraining) {
       details.push('Currently training neural network');
+      mode = 'Limited'; // Set to limited while training
     }
 
-    // For now, consider it working if we have enough games for pattern analysis
-    const isWorking = progress.gamesPlayed >= 3;
-    const status = isWorking ? 'Working (Pattern Mode)' : 'Limited functionality';
-
-    if (isWorking) {
-      details.push('Using enhanced pattern analysis');
+    // Determine operational mode and confidence based on available data
+    if (progress.gamesPlayed < 3) {
+      details.push('Need at least 3 games for learning');
+      mode = 'Limited';
+      confidence = 0;
+    } else if (progress.modelReady && !progress.isTraining) {
+      // Neural network is ready and not training
+      mode = 'Neural Network';
+      confidence = Math.min(0.9, 0.3 + progress.gamesPlayed * 0.1);
+      capabilities.push('Deep learning predictions');
+      capabilities.push('Pattern recognition');
+      capabilities.push('Behavioral analysis');
+    } else if (progress.gamesPlayed >= 10) {
+      // Enhanced pattern analysis with substantial data
+      mode = 'Enhanced Pattern';
+      confidence = Math.min(0.8, 0.4 + progress.gamesPlayed * 0.05);
+      capabilities.push('Advanced pattern recognition');
+      capabilities.push('Transition probability analysis');
+      capabilities.push('Streak behavior detection');
+      capabilities.push('Win/loss reaction analysis');
+    } else if (progress.gamesPlayed >= 3) {
+      // Basic pattern analysis
+      mode = 'Basic Pattern';
+      confidence = Math.min(0.6, 0.2 + progress.gamesPlayed * 0.1);
+      capabilities.push('Basic pattern recognition');
+      capabilities.push('Choice frequency analysis');
+    } else {
+      mode = 'Limited';
+      confidence = 0;
     }
 
-    return { isWorking, status, details };
+    // Add performance metrics
+    if (progress.gamesPlayed > 0) {
+      const patterns = this.analyzePlayerPatterns();
+      const patternQuality = this.assessPatternQuality(patterns);
+
+      if (patternQuality > 0.7) {
+        capabilities.push('High-quality pattern detection');
+      } else if (patternQuality > 0.4) {
+        capabilities.push('Moderate pattern detection');
+      }
+
+      details.push(`Pattern quality: ${Math.round(patternQuality * 100)}%`);
+    }
+
+    // Determine overall working status
+    const isWorking = mode !== 'Limited' && progress.gamesPlayed >= 3;
+
+    // Generate status description
+    let status: string;
+    switch (mode) {
+      case 'Neural Network':
+        status = `AI Enhanced (${Math.round(confidence * 100)}% confidence)`;
+        break;
+      case 'Enhanced Pattern':
+        status = `Smart Learning (${Math.round(confidence * 100)}% confidence)`;
+        break;
+      case 'Basic Pattern':
+        status = `Learning (${Math.round(confidence * 100)}% confidence)`;
+        break;
+      case 'Limited':
+      default:
+        status = progress.isTraining ? 'Training Neural Network...' : 'Limited functionality';
+        break;
+    }
+
+    return {
+      isWorking,
+      status,
+      details,
+      mode,
+      confidence,
+      capabilities,
+    };
   }
 
   private getPatternBasedPrediction(): AIConfidence {
@@ -619,11 +702,339 @@ export class AdaptiveAI {
     };
   }
 
+  private assessPatternQuality(patterns: PlayerPattern): number {
+    if (this.history.length === 0) return 0;
+
+    let quality = 0;
+
+    // Assess choice frequency distribution
+    const frequencies = Object.values(patterns.choiceFrequency);
+    const maxFreq = Math.max(...frequencies);
+    const minFreq = Math.min(...frequencies);
+    const frequencyVariation = (maxFreq - minFreq) / this.history.length;
+    quality += frequencyVariation * 0.3;
+
+    // Assess transition matrix quality
+    let transitionQuality = 0;
+    Object.values(patterns.transitionMatrix).forEach((transitions) => {
+      const total = Object.values(transitions).reduce((sum, count) => sum + count, 0);
+      if (total > 0) {
+        const maxTransition = Math.max(...Object.values(transitions));
+        transitionQuality += maxTransition / total;
+      }
+    });
+    quality += (transitionQuality / 3) * 0.3;
+
+    // Assess streak behavior clarity
+    const streakClarity = Math.abs(patterns.streakBehavior.tendencyToSwitch - patterns.streakBehavior.tendencyToRepeat);
+    quality += streakClarity * 0.2;
+
+    // Assess recent bias strength
+    const recentBiasValues = Object.values(patterns.timePatterns.recentBias);
+    const recentBiasStrength = Math.max(...recentBiasValues) - Math.min(...recentBiasValues);
+    quality += recentBiasStrength * 0.2;
+
+    return Math.min(1, Math.max(0, quality));
+  }
+
   public reset(): void {
     this.history = [];
     this.lastPrediction = null;
     if (this.neuralNetwork) {
       this.initializeNeuralNetwork();
     }
+  }
+
+  public getPerformanceMetrics(): {
+    winRate: number;
+    gamesPlayed: number;
+    predictionAccuracy: number;
+    learningProgress: number;
+    patternStrength: number;
+    neuralNetworkStatus: 'Ready' | 'Training' | 'Unavailable';
+  } {
+    const progress = this.getTrainingProgress();
+    const totalGames = this.history.length;
+
+    if (totalGames === 0) {
+      return {
+        winRate: 0,
+        gamesPlayed: 0,
+        predictionAccuracy: 0,
+        learningProgress: 0,
+        patternStrength: 0,
+        neuralNetworkStatus: progress.modelReady ? 'Ready' : 'Unavailable',
+      };
+    }
+
+    // Calculate win rate
+    const wins = this.history.filter((game) => game.result === 'win').length;
+    const winRate = wins / totalGames;
+
+    // Calculate prediction accuracy (how often the AI's choice beats the player's choice)
+    const correctPredictions = this.history.filter((game) => {
+      const aiChoice = game.aiChoice;
+      const playerChoice = game.playerChoice;
+      return (
+        (aiChoice === 'rock' && playerChoice === 'scissors') ||
+        (aiChoice === 'paper' && playerChoice === 'rock') ||
+        (aiChoice === 'scissors' && playerChoice === 'paper')
+      );
+    }).length;
+    const predictionAccuracy = correctPredictions / totalGames;
+
+    // Calculate learning progress based on games played and pattern quality
+    let learningProgress = 0;
+    if (totalGames >= 3) {
+      const patterns = this.analyzePlayerPatterns();
+      const patternQuality = this.assessPatternQuality(patterns);
+      learningProgress = Math.min(1, (totalGames / 20) * 0.6 + patternQuality * 0.4);
+    }
+
+    // Get pattern strength
+    const patterns = this.analyzePlayerPatterns();
+    const patternStrength = this.assessPatternQuality(patterns);
+
+    // Determine neural network status
+    let neuralNetworkStatus: 'Ready' | 'Training' | 'Unavailable';
+    if (progress.isTraining) {
+      neuralNetworkStatus = 'Training';
+    } else if (progress.modelReady) {
+      neuralNetworkStatus = 'Ready';
+    } else {
+      neuralNetworkStatus = 'Unavailable';
+    }
+
+    return {
+      winRate: Math.round(winRate * 100) / 100,
+      gamesPlayed: totalGames,
+      predictionAccuracy: Math.round(predictionAccuracy * 100) / 100,
+      learningProgress: Math.round(learningProgress * 100) / 100,
+      patternStrength: Math.round(patternStrength * 100) / 100,
+      neuralNetworkStatus,
+    };
+  }
+
+  public getLearningInsights(): {
+    playerPatterns: string[];
+    adaptationStrategies: string[];
+    learningFocus: string[];
+    recentImprovements: string[];
+  } {
+    if (this.history.length < 3) {
+      return {
+        playerPatterns: ['Not enough data yet'],
+        adaptationStrategies: ['Waiting for more games'],
+        learningFocus: ['Basic pattern recognition'],
+        recentImprovements: ['None yet'],
+      };
+    }
+
+    const patterns = this.analyzePlayerPatterns();
+    const insights = {
+      playerPatterns: [] as string[],
+      adaptationStrategies: [] as string[],
+      learningFocus: [] as string[],
+      recentImprovements: [] as string[],
+    };
+
+    // Analyze player patterns
+    const mostFrequent = Object.entries(patterns.choiceFrequency).reduce((a, b) => (a[1] > b[1] ? a : b))[0] as Choice;
+    const frequency = Math.round((patterns.choiceFrequency[mostFrequent] / this.history.length) * 100);
+
+    if (frequency > 50) {
+      insights.playerPatterns.push(`Player heavily favors ${mostFrequent} (${frequency}% of moves)`);
+    } else if (frequency > 40) {
+      insights.playerPatterns.push(`Player shows preference for ${mostFrequent} (${frequency}% of moves)`);
+    } else {
+      insights.playerPatterns.push('Player shows balanced choice distribution');
+    }
+
+    // Analyze streak behavior
+    if (patterns.streakBehavior.tendencyToSwitch > 0.7) {
+      insights.playerPatterns.push('Player frequently switches choices between rounds');
+    } else if (patterns.streakBehavior.tendencyToRepeat > 0.7) {
+      insights.playerPatterns.push('Player tends to repeat choices in streaks');
+    } else {
+      insights.playerPatterns.push('Player shows mixed streak behavior');
+    }
+
+    // Analyze transition patterns
+    const lastChoice = this.history[this.history.length - 1].playerChoice;
+    const transitions = patterns.transitionMatrix[lastChoice];
+    const mostLikelyNext = Object.entries(transitions).reduce((a, b) => (a[1] > b[1] ? a : b))[0] as Choice;
+
+    if (transitions[mostLikelyNext] > 0) {
+      const transitionProb = Math.round(
+        (transitions[mostLikelyNext] / Object.values(transitions).reduce((sum, count) => sum + count, 0)) * 100
+      );
+      if (transitionProb > 60) {
+        insights.playerPatterns.push(
+          `Strong tendency to choose ${mostLikelyNext} after ${lastChoice} (${transitionProb}% probability)`
+        );
+      }
+    }
+
+    // Adaptation strategies
+    if (this.history.length >= 5) {
+      const recentGames = this.history.slice(-5);
+      const recentWins = recentGames.filter((g) => g.result === 'win').length;
+      const recentLosses = recentGames.filter((g) => g.result === 'lose').length;
+
+      if (recentWins > recentLosses) {
+        insights.adaptationStrategies.push('Player is winning recently - focusing on counter-strategies');
+      } else if (recentLosses > recentWins) {
+        insights.adaptationStrategies.push('Player is losing recently - analyzing defensive patterns');
+      } else {
+        insights.adaptationStrategies.push('Balanced recent performance - monitoring for changes');
+      }
+    }
+
+    // Learning focus areas
+    if (this.history.length >= 10) {
+      insights.learningFocus.push('Advanced pattern recognition');
+      insights.learningFocus.push('Behavioral prediction models');
+      insights.learningFocus.push('Adaptive counter-strategies');
+    } else if (this.history.length >= 5) {
+      insights.learningFocus.push('Pattern frequency analysis');
+      insights.learningFocus.push('Transition probability mapping');
+    } else {
+      insights.learningFocus.push('Basic choice frequency');
+      insights.learningFocus.push('Simple pattern detection');
+    }
+
+    // Recent improvements
+    if (this.history.length >= 3) {
+      const patternQuality = this.assessPatternQuality(patterns);
+      if (patternQuality > 0.7) {
+        insights.recentImprovements.push('High-quality pattern detection achieved');
+      } else if (patternQuality > 0.4) {
+        insights.recentImprovements.push('Moderate pattern quality - continuing to learn');
+      }
+
+      if (this.history.length >= 5) {
+        insights.recentImprovements.push('Enhanced behavioral analysis enabled');
+      }
+    }
+
+    return insights;
+  }
+
+  public getPredictionInsights(): {
+    currentConfidence: number;
+    predictionReasoning: string[];
+    uncertaintyFactors: string[];
+    nextMovePrediction: string;
+    confidenceTrend: 'Increasing' | 'Stable' | 'Decreasing';
+  } {
+    if (this.history.length === 0) {
+      return {
+        currentConfidence: 0,
+        predictionReasoning: ['No game history available'],
+        uncertaintyFactors: ['Insufficient data for prediction'],
+        nextMovePrediction: 'Random (no data)',
+        confidenceTrend: 'Stable',
+      };
+    }
+
+    const lastPrediction = this.getLastPrediction();
+    const patterns = this.analyzePlayerPatterns();
+    const currentConfidence = lastPrediction?.confidence || 0;
+
+    const insights = {
+      currentConfidence,
+      predictionReasoning: [] as string[],
+      uncertaintyFactors: [] as string[],
+      nextMovePrediction: '',
+      confidenceTrend: 'Stable' as 'Increasing' | 'Stable' | 'Decreasing',
+    };
+
+    // Analyze prediction reasoning
+    if (lastPrediction) {
+      const maxProb = Math.max(
+        lastPrediction.rockProbability,
+        lastPrediction.paperProbability,
+        lastPrediction.scissorsProbability
+      );
+      const choice =
+        maxProb === lastPrediction.rockProbability
+          ? 'rock'
+          : maxProb === lastPrediction.paperProbability
+            ? 'paper'
+            : 'scissors';
+
+      insights.nextMovePrediction = `${choice} (${Math.round(maxProb * 100)}% confidence)`;
+
+      // Add reasoning from the last prediction
+      insights.predictionReasoning.push(...lastPrediction.reasoning);
+    }
+
+    // Analyze uncertainty factors
+    if (this.history.length < 5) {
+      insights.uncertaintyFactors.push('Limited historical data');
+    }
+
+    if (this.history.length < 10) {
+      insights.uncertaintyFactors.push('Pattern analysis still developing');
+    }
+
+    // Check for inconsistent player behavior
+    const choiceVariation =
+      Math.max(...Object.values(patterns.choiceFrequency)) - Math.min(...Object.values(patterns.choiceFrequency));
+    if (choiceVariation < 0.2) {
+      insights.uncertaintyFactors.push('Player shows very balanced choices');
+    }
+
+    // Check transition matrix consistency
+    let transitionConsistency = 0;
+    Object.values(patterns.transitionMatrix).forEach((transitions) => {
+      const total = Object.values(transitions).reduce((sum, count) => sum + count, 0);
+      if (total > 0) {
+        const maxTransition = Math.max(...Object.values(transitions));
+        transitionConsistency += maxTransition / total;
+      }
+    });
+
+    if (transitionConsistency < 0.4) {
+      insights.uncertaintyFactors.push('Player shows unpredictable transitions');
+    }
+
+    // Determine confidence trend based on recent games
+    if (this.history.length >= 6) {
+      const recentGames = this.history.slice(-6);
+      const olderGames = this.history.slice(-12, -6);
+
+      if (recentGames.length >= 3 && olderGames.length >= 3) {
+        const recentConfidence = this.calculateConfidenceForGames(recentGames);
+        const olderConfidence = this.calculateConfidenceForGames(olderGames);
+
+        if (recentConfidence > olderConfidence + 0.1) {
+          insights.confidenceTrend = 'Increasing';
+        } else if (recentConfidence < olderConfidence - 0.1) {
+          insights.confidenceTrend = 'Decreasing';
+        } else {
+          insights.confidenceTrend = 'Stable';
+        }
+      }
+    }
+
+    // Add confidence-based insights
+    if (currentConfidence > 0.7) {
+      insights.predictionReasoning.push('High confidence in prediction based on strong patterns');
+    } else if (currentConfidence > 0.4) {
+      insights.predictionReasoning.push('Moderate confidence with some uncertainty');
+    } else {
+      insights.predictionReasoning.push('Low confidence - patterns are unclear');
+    }
+
+    return insights;
+  }
+
+  private calculateConfidenceForGames(games: GameEvent[]): number {
+    if (games.length === 0) return 0;
+
+    // Calculate how well the AI performed in these games
+    const wins = games.filter((g) => g.result === 'win').length;
+    return wins / games.length;
   }
 }

@@ -5,7 +5,7 @@ import PlayerSection from './player-section';
 import VSDivider from './VSDivider';
 import AISection from './ai-section';
 import type { Choice, Result } from '@/lib/game/logic';
-import type { AIConfidence } from '@/lib/game/adaptive-ai';
+import type { AIConfidence, AdaptiveAI } from '@/lib/game/adaptive-ai';
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
@@ -16,8 +16,9 @@ interface GameAreaProps {
   result: Result | null;
   adaptivePrediction: AIConfidence | null;
   onPlayerChoice: (choice: Choice) => void;
-  adaptiveAI: { getTrainingProgress: () => { gamesPlayed: number } } | null;
+  adaptiveAI: AdaptiveAI | null;
   isLoading?: boolean;
+  onOpenInfoModal: () => void;
 }
 
 const GameArea: FC<GameAreaProps> = ({
@@ -29,6 +30,7 @@ const GameArea: FC<GameAreaProps> = ({
   onPlayerChoice,
   adaptiveAI,
   isLoading = false,
+  onOpenInfoModal,
 }) => {
   return (
     <section className="w-full max-w-5xl mx-auto mt-50 md:mt-10 px-3 relative z-10" aria-label="Game area">
@@ -41,6 +43,7 @@ const GameArea: FC<GameAreaProps> = ({
           adaptivePrediction={adaptivePrediction}
           adaptiveAI={adaptiveAI}
           isLoading={isLoading}
+          onOpenInfoModal={onOpenInfoModal}
         />
         <VSDivider />
         <PlayerSection onPlayerChoice={onPlayerChoice} />

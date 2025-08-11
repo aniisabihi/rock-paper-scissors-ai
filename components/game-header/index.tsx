@@ -18,18 +18,48 @@ const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adapt
     if (difficulty !== 'Hard' || !adaptiveAI) return null;
 
     const status = adaptiveAI.getStatus();
+
+    const getStatusColor = () => {
+      switch (status.mode) {
+        case 'Neural Network':
+          return 'bg-emerald-600/80 text-emerald-100';
+        case 'Enhanced Pattern':
+          return 'bg-blue-600/80 text-blue-100';
+        case 'Basic Pattern':
+          return 'bg-amber-600/80 text-amber-100';
+        case 'Limited':
+        default:
+          return 'bg-yellow-600/80 text-yellow-100';
+      }
+    };
+
+    const getModeIcon = () => {
+      switch (status.mode) {
+        case 'Neural Network':
+          return '🧠';
+        case 'Enhanced Pattern':
+          return '🔍';
+        case 'Basic Pattern':
+          return '📊';
+        case 'Limited':
+        default:
+          return '🤖';
+      }
+    };
+
     return (
-      <div className="mt-2 text-xs">
-        <span
-          className={`px-2 py-1 rounded-full ${
-            status.isWorking ? 'bg-accent-600/80 text-accent-100' : 'bg-yellow-600/80 text-yellow-100'
-          }`}
-        >
-          🤖 {status.status}
-        </span>
-        {!status.isWorking && status.details.length > 0 && (
-          <div className="mt-1 text-yellow-200/80">{status.details[0]}</div>
-        )}
+      <div className="mt-2 text-xs max-w-md text-center">
+        {/* Main Status Badge */}
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <span className={`px-3 py-1.5 rounded-full font-medium ${getStatusColor()}`}>
+            {getModeIcon()} {status.status}
+          </span>
+        </div>
+
+        {/* Basic Info */}
+        <div className="text-accent-200/80 text-[10px]">
+          Click the info icon in the AI thought bubble for detailed insights
+        </div>
       </div>
     );
   };
