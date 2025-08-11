@@ -10,7 +10,7 @@ interface ResultDisplayProps {
 
 const ResultDisplay: FC<ResultDisplayProps> = ({ result }) => {
   return (
-    <div className="h-[120px] md:h-[140px] flex flex-col justify-center">
+    <div className="h-[60px] md:h-[80px] flex flex-col justify-center">
       <AnimatePresence>
         {result && (
           <motion.div
@@ -19,7 +19,7 @@ const ResultDisplay: FC<ResultDisplayProps> = ({ result }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: 'spring', damping: 15, stiffness: 300 }}
-            className="text-lg md:text-2xl lg:text-3xl font-black drop-shadow-2xl"
+            className="text-2xl lg:text-3xl font-black drop-shadow-2xl"
           >
             {result === 'win' && (
               <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">

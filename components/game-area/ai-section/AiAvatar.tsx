@@ -56,7 +56,7 @@ const AiAvatar: FC<AiAvatarProps> = ({ mood }) => {
 
       {/* Main avatar */}
       <motion.div
-        className="relative text-4xl md:text-5xl lg:text-6xl transform-gpu drop-shadow-2xl"
+        className="relative text-5xl lg:text-6xl transform-gpu drop-shadow-2xl"
         {...animationProps}
         style={{
           transformOrigin: 'center center',

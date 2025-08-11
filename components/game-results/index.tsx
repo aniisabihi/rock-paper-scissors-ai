@@ -14,7 +14,7 @@ interface GameResultsProps {
 const GameResults: FC<GameResultsProps> = ({ result, playerChoice, aiChoice }) => {
   return (
     <section
-      className="w-full max-w-4xl mt-4 md:mt-6 text-center relative z-10"
+      className="w-full max-w-4xl mt-4 -mb-8 md:-mb-12 text-center relative z-10"
       aria-label="Game results"
       aria-live="polite"
       aria-atomic="true"

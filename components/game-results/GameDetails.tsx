@@ -20,7 +20,7 @@ const GameDetails: FC<GameDetailsProps> = ({ result, playerChoice, aiChoice }) =
       transition={{ delay: 0.3 }}
       className="space-y-2 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-2xl"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-base md:text-lg">
+      <div className="grid grid-cols-2 gap-3 text-base md:text-lg">
         <div className="flex items-center justify-center gap-2 p-2 bg-white/10 rounded-lg">
           <span className="text-xl">{playerChoice === 'rock' ? '🪨' : playerChoice === 'paper' ? '📄' : '✂️'}</span>
           <div>

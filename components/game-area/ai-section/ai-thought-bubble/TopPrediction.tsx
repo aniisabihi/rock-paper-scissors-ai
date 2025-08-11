@@ -26,10 +26,9 @@ const TopPrediction: FC<TopPredictionProps> = ({ prediction }) => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.6 }}
-      className="bg-white/10 backdrop-blur-md rounded-lg p-3 border border-white/20"
+      className="bg-white/10 backdrop-blur-md rounded-lg p-2 border border-white/20"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">🎯</span>
+      <div className="flex items-center gap-2 mb-1">
         <h4 className="text-white font-semibold text-sm">Top Prediction</h4>
       </div>
       <div className="flex items-center gap-3">
