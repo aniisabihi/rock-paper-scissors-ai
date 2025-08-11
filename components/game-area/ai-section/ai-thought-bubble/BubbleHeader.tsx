@@ -6,12 +6,26 @@ import type { AIConfidence, AdaptiveAI } from '@/lib/game/adaptive-ai';
 interface BubbleHeaderProps {
   prediction: AIConfidence;
   adaptiveAI: AdaptiveAI | null;
-  isLoading?: boolean;
   onOpenInfoModal: () => void;
 }
 
-const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction, adaptiveAI, isLoading = false, onOpenInfoModal }) => {
+const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction, adaptiveAI, onOpenInfoModal }) => {
   const formatPercentage = (value: number): number => Math.round(value * 100);
+
+  // Get confidence from the same source as the main status badge
+  const getConfidenceValue = (): number => {
+    if (!adaptiveAI) return prediction.confidence;
+
+    try {
+      const status = adaptiveAI.getStatus();
+      return status.confidence;
+    } catch (error) {
+      console.error('Error getting AI status:', error);
+      return prediction.confidence; // Fallback to prediction confidence
+    }
+  };
+
+  const confidence = getConfidenceValue();
 
   const getConfidenceColor = (confidence: number): string => {
     if (confidence > 0.7) return 'text-green-300';
@@ -31,11 +45,8 @@ const BubbleHeader: FC<BubbleHeaderProps> = ({ prediction, adaptiveAI, isLoading
         <h3 className="font-bold text-sm bg-gradient-to-r from-accent-200 to-accent-300 bg-clip-text text-transparent">
           AI Neural Network
         </h3>
-        <p className="text-xs font-semibold bg-gradient-to-r from-accent-200 to-accent-300 bg-clip-text text-transparent">
-          Games: {isLoading ? 'Loading...' : adaptiveAI ? adaptiveAI.getTrainingProgress()?.gamesPlayed || 0 : '...'}
-        </p>
-        <p className={`text-xs font-semibold ${getConfidenceColor(prediction.confidence)}`}>
-          {getConfidenceText(prediction.confidence)} • {formatPercentage(prediction.confidence)}%
+        <p className={`text-xs font-semibold ${getConfidenceColor(confidence)}`}>
+          {getConfidenceText(confidence)} • {formatPercentage(confidence)}%
         </p>
       </div>
 

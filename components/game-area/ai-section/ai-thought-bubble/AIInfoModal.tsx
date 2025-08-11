@@ -229,49 +229,52 @@ const AIInfoModal: FC<AIInfoModalProps> = ({ isOpen, onClose, adaptiveAI }) => {
 
             {/* Current Prediction */}
             <div className="bg-accent-900/40 rounded-lg p-4 border border-accent-800/60">
-              <h3 className="text-lg font-bold text-white mb-3 text-center">Current Prediction</h3>
+              <h3 className="text-lg font-bold text-white mb-4 text-center">Current Prediction</h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Next Move */}
-                <div className="text-center">
-                  <div className="text-accent-300/90 font-medium mb-2">Next Move:</div>
-                  <div className="text-white/90 font-medium text-lg">{predictionInsights.nextMovePrediction}</div>
+              {/* Prediction Overview */}
+              <div className="bg-accent-800/30 rounded-lg p-4 mb-4">
+                <div className="text-center mb-3">
+                  <div className="text-accent-300/90 font-medium text-sm mb-1">Next Move Prediction</div>
+                  <div className="text-white/90 font-bold text-xl">{predictionInsights.nextMovePrediction}</div>
                 </div>
 
-                {/* Confidence */}
-                <div className="text-center">
-                  <div className="text-accent-300/90 font-medium mb-2">Confidence:</div>
-                  <div className="flex items-center justify-center gap-3">
-                    <div className="w-24 bg-accent-800/50 rounded-full h-3">
-                      <div
-                        className="bg-gradient-to-r from-accent-400 to-accent-300 h-3 rounded-full transition-all duration-300"
-                        style={{ width: `${Math.round(predictionInsights.currentConfidence * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-white/90 font-medium">
+                {/* Confidence Bar */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-accent-300/90 font-medium text-sm">Confidence Level</span>
+                    <span className="text-white/90 font-bold text-lg">
                       {Math.round(predictionInsights.currentConfidence * 100)}%
                     </span>
+                  </div>
+                  <div className="w-full bg-accent-800/50 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-accent-400 to-accent-300 h-3 rounded-full transition-all duration-300 shadow-lg"
+                      style={{ width: `${Math.round(predictionInsights.currentConfidence * 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Confidence Trend */}
+                <div className="text-center">
+                  <div className="text-accent-300/90 font-medium text-sm mb-2">Confidence Trend</div>
+                  <div className="flex items-center justify-center gap-2">
+                    {predictionInsights.confidenceTrend === 'Increasing' && '📈'}
+                    {predictionInsights.confidenceTrend === 'Stable' && '➡️'}
+                    {predictionInsights.confidenceTrend === 'Decreasing' && '📉'}
+                    <span className="text-white/90 font-medium">{predictionInsights.confidenceTrend}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Confidence Trend */}
-              <div className="mt-4 text-center">
-                <div className="text-accent-300/90 font-medium mb-2">Confidence Trend:</div>
-                <div className="flex items-center justify-center gap-2">
-                  {predictionInsights.confidenceTrend === 'Increasing' && '📈'}
-                  {predictionInsights.confidenceTrend === 'Stable' && '➡️'}
-                  {predictionInsights.confidenceTrend === 'Decreasing' && '📉'}
-                  <span className="text-white/90 font-medium">{predictionInsights.confidenceTrend}</span>
-                </div>
-              </div>
-
               {/* Prediction Reasoning */}
-              <div className="mt-4">
-                <div className="text-accent-300/90 font-medium mb-2 text-center">Reasoning:</div>
+              <div className="mb-4">
+                <div className="text-accent-300/90 font-medium mb-3 text-center">AI Reasoning</div>
                 <div className="space-y-2">
                   {predictionInsights.predictionReasoning.map((reason, index) => (
-                    <div key={index} className="text-sm text-white/80 text-center pl-3 border-l-2 border-accent-600/50">
+                    <div
+                      key={index}
+                      className="text-sm text-white/80 p-3 bg-accent-800/20 rounded-lg border-l-4 border-accent-500/50"
+                    >
                       • {reason}
                     </div>
                   ))}
@@ -280,15 +283,15 @@ const AIInfoModal: FC<AIInfoModalProps> = ({ isOpen, onClose, adaptiveAI }) => {
 
               {/* Uncertainty Factors */}
               {predictionInsights.uncertaintyFactors.length > 0 && (
-                <div className="mt-4">
-                  <div className="text-accent-300/90 font-medium mb-2 text-center">Uncertainty Factors:</div>
+                <div>
+                  <div className="text-accent-300/90 font-medium mb-3 text-center">Uncertainty Factors</div>
                   <div className="space-y-2">
                     {predictionInsights.uncertaintyFactors.map((factor, index) => (
                       <div
                         key={index}
-                        className="text-sm text-yellow-200/80 text-center pl-3 border-l-2 border-yellow-600/50"
+                        className="text-sm text-yellow-200/80 p-3 bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500/50"
                       >
-                        • {factor}
+                        ⚠️ {factor}
                       </div>
                     ))}
                   </div>
@@ -299,14 +302,15 @@ const AIInfoModal: FC<AIInfoModalProps> = ({ isOpen, onClose, adaptiveAI }) => {
             {/* Status Details */}
             {status.details.length > 0 && (
               <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-800/30">
-                <h3 className="text-lg font-bold text-white mb-3 text-center">Status Details</h3>
-                <div className="space-y-2">
+                <h3 className="text-lg font-bold text-white mb-4 text-center">System Status</h3>
+                <div className="space-y-3">
                   {status.details.map((detail, index) => (
                     <div
                       key={index}
-                      className="text-sm text-yellow-200/80 text-center pl-3 border-l-2 border-yellow-600/50"
+                      className="flex items-start gap-3 p-3 bg-yellow-900/30 rounded-lg border border-yellow-800/50"
                     >
-                      • {detail}
+                      <span className="text-yellow-400 text-lg mt-0.5">ℹ️</span>
+                      <span className="text-yellow-200/90 text-sm leading-relaxed">{detail}</span>
                     </div>
                   ))}
                 </div>

@@ -55,11 +55,6 @@ const GameHeader: FC<GameHeaderProps> = ({ difficulty, onDifficultyChange, adapt
             {getModeIcon()} {status.status}
           </span>
         </div>
-
-        {/* Basic Info */}
-        <div className="text-accent-200/80 text-[10px]">
-          Click the info icon in the AI thought bubble for detailed insights
-        </div>
       </div>
     );
   };

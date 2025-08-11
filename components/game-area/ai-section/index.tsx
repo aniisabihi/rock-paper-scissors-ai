@@ -55,9 +55,7 @@ const AISection: FC<AISectionProps> = ({
         <AIThoughtBubble
           prediction={adaptivePrediction}
           isVisible={difficulty === 'Hard' && (isThinking || !!adaptivePrediction)}
-          isThinking={isThinking}
           adaptiveAI={adaptiveAI}
-          isLoading={isLoading}
           onOpenInfoModal={onOpenInfoModal}
         />
 

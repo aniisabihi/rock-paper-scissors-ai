@@ -73,6 +73,10 @@ const InfoModal: FC<InfoModalProps> = ({ isOpen, onClose }) => {
                 The AI analyzes your playing patterns and adapts its strategy in real-time. In Hard mode, it uses a
                 neural network that continuously learns and improves, making each game more challenging than the last!
               </p>
+              <p className="text-white/90 text-sm mt-2 leading-relaxed">
+                In hard mode, click the info icon in the AI thought bubble for detailed insights on how the AI is
+                learning from your moves.
+              </p>
             </div>
           </div>
         </div>
