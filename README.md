@@ -1,5 +1,7 @@
 # Rock Paper Scissors AI
 
+**Live demo:** https://rock-paper-scissors-aniisa.vercel.app
+
 A sophisticated Rock Paper Scissors game built with Next.js 15 and React 19, featuring an advanced adaptive AI opponent that learns from your playing patterns using machine learning.
 
 ## Features
