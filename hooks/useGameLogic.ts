@@ -43,9 +43,15 @@ export const useGameLogic = () => {
 
       const currentMode = AI_MODES[difficulty];
 
-      // Get prediction before recording the choice
+      // Get prediction before recording the choice. This same prediction is reused
+      // for the actual AI move below, so the displayed guess always matches what
+      // the AI counters (previously each was predicted separately, on either side
+      // of recordPlayerChoice, and could disagree).
+      let patternPrediction: Choice | null = null;
+
       if (currentMode === 'pattern') {
-        setAiPrediction(predictNextMove());
+        patternPrediction = predictNextMove();
+        setAiPrediction(patternPrediction);
         recordPlayerChoice(choice);
       } else if (currentMode === 'adaptive' && adaptiveAI) {
         try {
@@ -57,25 +63,28 @@ export const useGameLogic = () => {
             console.log('🤖 Adaptive AI prediction:', prediction);
           } else {
             console.warn('⚠️ Adaptive AI not properly initialized, falling back to pattern prediction');
-            setAiPrediction(predictNextMove());
+            patternPrediction = predictNextMove();
+            setAiPrediction(patternPrediction);
             recordPlayerChoice(choice);
           }
         } catch (error) {
           console.error('❌ Adaptive AI prediction failed:', error);
           // Fallback to pattern prediction
-          setAiPrediction(predictNextMove());
+          patternPrediction = predictNextMove();
+          setAiPrediction(patternPrediction);
           recordPlayerChoice(choice);
         }
       } else if (currentMode === 'adaptive' && !adaptiveAI) {
         // Adaptive AI not ready yet, fallback to pattern
-        setAiPrediction(predictNextMove());
+        patternPrediction = predictNextMove();
+        setAiPrediction(patternPrediction);
         recordPlayerChoice(choice);
       }
 
       // Simulate AI "thinking"
       setTimeout(async () => {
         try {
-          const ai = await getChoiceForMode(currentMode, adaptiveAI);
+          const ai = await getChoiceForMode(currentMode, adaptiveAI, patternPrediction ?? undefined);
           const gameResult = determineResult(choice, ai);
 
           setAiChoice(ai);

@@ -81,8 +81,7 @@ const predictWithMarkovChain = (): Choice => {
   return mostLikely;
 };
 
-export const getSmartChoice = (): Choice => {
-  const predicted = predictNextMove();
+export const getSmartChoice = (predicted: Choice): Choice => {
   const counterchoices: Record<Choice, Choice> = {
     rock: 'paper',
     paper: 'scissors',
@@ -116,7 +115,7 @@ export const getAdaptiveChoice = async (adaptiveAI: {
     return counterchoices[predictedPlayerChoice];
   } catch (error) {
     console.error('Adaptive AI error, falling back to smart choice:', error);
-    return getSmartChoice();
+    return getSmartChoice(predictNextMove());
   }
 };
 
@@ -124,18 +123,19 @@ export const getChoiceForMode = async (
   mode: AIMode,
   adaptiveAI?: {
     predictNextMove: () => Promise<{ rockProbability: number; paperProbability: number; scissorsProbability: number }>;
-  } | null
+  } | null,
+  patternPrediction?: Choice
 ): Promise<Choice> => {
   switch (mode) {
     case 'random':
       return getRandomChoice();
     case 'pattern':
-      return getSmartChoice();
+      return getSmartChoice(patternPrediction ?? predictNextMove());
     case 'adaptive':
       if (adaptiveAI) {
         return await getAdaptiveChoice(adaptiveAI);
       }
-      return getSmartChoice();
+      return getSmartChoice(patternPrediction ?? predictNextMove());
     default:
       return getRandomChoice();
   }
