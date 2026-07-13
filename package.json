@@ -12,26 +12,27 @@
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
-    "@tensorflow/tfjs-converter": "^1.7.4",
-    "@tensorflow/tfjs-core": "^1.7.4",
-    "framer-motion": "^12.23.12",
-    "lucide-react": "^0.539.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "framer-motion": "^12.42.2",
+    "lucide-react": "^1.24.0",
     "ml5": "0.12.2",
-    "next": "16.2.6",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@next/bundle-analyzer": "^15.4.6",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.4.6",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+    "@eslint/eslintrc": "^3.3.6",
+    "@next/bundle-analyzer": "^16.2.10",
+    "@tailwindcss/postcss": "^4.3.2",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^10.7.0",
+    "eslint-config-next": "16.2.10",
+    "prettier": "^3.9.5",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "yarn@4.17.1"
 }
